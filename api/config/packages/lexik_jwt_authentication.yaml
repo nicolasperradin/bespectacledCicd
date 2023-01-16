@@ -1,0 +1,10 @@
+lexik_jwt_authentication:
+    secret_key: '%env(JWT_SECRET_KEY)%'
+    user_identity_field: email
+    # token encoding/decoding settings
+    encoder:
+        # token encoder/decoder service - default implementation based on the lcobucci/jwt library
+        service:            lexik_jwt_authentication.encoder.lcobucci
+
+        # encryption algorithm used by the encoder service
+        signature_algorithm: HS512
