@@ -45,7 +45,7 @@ jobs:
       - name: PHP-CS-Fixer
         uses: docker://oskarstark/php-cs-fixer-ga
         with:
-          args: --diff --diff-format=udiff --dry-run --show-progress=estimating --using-cache=no --verbose --allow-risky=yes --config=.php_cs.dist
+          args: --config=.php-cs-fix.dist --diff --dry-run
       ## —— Tests ———————————————————————————————————————————————————————————
       - name: Run functionnal and unit tests
         run: |
