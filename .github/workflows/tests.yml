@@ -45,11 +45,15 @@ jobs:
       - name: PHP-CS-Fixer
         uses: docker://oskarstark/php-cs-fixer-ga
         with:
-          args: --config=.php-cs-fixer.dist.php --allow-risky=yes
+          args: --config=api/.php-cs-fixer.dist.php --allow-risky=yes
       ## —— Tests ———————————————————————————————————————————————————————————
       - name: Run functionnal and unit tests
-        run: |
-          cp .env.ci .env.test
-          cp .env.ci .env
-          cp phpunit.ci.xml phpunit.xml
-          composer test
+        uses: php-actions/phpunit@v3
+        with:
+          php_extensions: xdebug
+          bootstrap: vendor/autoload.php
+          configuration: phpunit.xml.dist
+          args: --coverage-text
+        env:
+          XDEBUG_MODE: coverage
+          TEST_NAME: Scarlett
