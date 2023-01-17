@@ -1,4 +1,6 @@
 {
+    "name" : "bespectacled/api",
+    "description" : "Api of Bespectacled using API Platform",
     "type": "project",
     "license": "proprietary",
     "minimum-stability": "stable",
