@@ -12,7 +12,6 @@ class JWTCreatedListener {
      */
     public function __construct(private RequestStack $requestStack)
     {
-        $this->requestStack = $requestStack;
     }
 
     /**
@@ -25,7 +24,7 @@ class JWTCreatedListener {
         $request = $this->requestStack->getCurrentRequest();
 
         $payload       = $event->getData();
-        $payload['username'] = $event->getUser()->getUsernameIdentifier();
+        $payload['username'] = $event->getUser()->getUsername();
         $payload['id'] = $event->getUser()->getId();
 
         $event->setData($payload);
