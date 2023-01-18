@@ -48,7 +48,7 @@ jobs:
           args: --config=api/.php-cs-fixer.dist.php --allow-risky=yes
       ## —— Tests ———————————————————————————————————————————————————————————
       - name: Run functionnal and unit tests with PHPUNIT
-        run: composer test
+        run: vendor/bin/simple-phpunit tests
       # —— Code coverage ————————————————————————————————————————————————————
       #- name: Upload coverage to Codecov
        # uses: codecov/codecov-action@v1
