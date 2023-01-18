@@ -47,13 +47,14 @@ jobs:
         with:
           args: --config=api/.php-cs-fixer.dist.php --allow-risky=yes
       ## —— Tests ———————————————————————————————————————————————————————————
-      - name: Run functionnal and unit tests
-        uses: php-actions/phpunit@v3
-        with:
-          php_extensions: xdebug
-          bootstrap: vendor/autoload.php
-          configuration: phpunit.xml.dist
-          args: --coverage-text
-        env:
-          XDEBUG_MODE: coverage
-          TEST_NAME: Scarlett
+      - name: Run functionnal and unit tests with PHPUNIT
+        run: composer test
+      # —— Code coverage ————————————————————————————————————————————————————
+      #- name: Upload coverage to Codecov
+       # uses: codecov/codecov-action@v1
+       # with:
+         # token: ${{ secrets.CODECOV_TOKEN }}
+         # file: ./api/coverage.xml
+         # flags: unittests
+         # name: codecov-umbrella
+          #fail_ci_if_error: true
