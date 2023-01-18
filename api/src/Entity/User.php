@@ -13,94 +13,71 @@ use App\Controller\UserController;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Validator\Constraints as Assert;
 
-/**
- * @ORM\Entity(repositoryClass=UserRepository::class)
- * @ORM\Table(name="`user`")
- * 
- * 
- * @ApiResource(
- *  normalizationContext={"groups"={"user:read"}},
- *  denormalizationContext={"groups"={"user:write"}},
- *  collectionOperations={
- *      "get"={
- *          "pagination_enabled"=false,
- *          "access_control"="is_granted('ROLE_ADMIN')"
- *      },
- *      "post"={
- *          "pagination_enabled"=false
- *      },
- *      "me"={
- *          "method"="GET",
- *          "path"="/users/me",
- *          "controller"=UserController::class,
- *          "pagination_enabled"=false
- *      }
- *  },
- *  itemOperations={
- *      "get" = {
- *          "access_control"="is_granted('ROLE_ADMIN')" 
- *      },
- *      "put" = {
- *          "access_control"="is_granted('ROLE_ADMIN')" 
- *      }, 
- *      "delete" = {
- *          "access_control"="is_granted('ROLE_ADMIN')" 
- *      },
- *      "patch" = {
- *          "access_control"="is_granted('ROLE_ADMIN')" 
- *      }, 
- *  }
- * )
- * 
- * @UniqueEntity(fields={"email"})
- **/
+#[ORM\Entity(repositoryClass: UserRepository::class)]
+#[ORM\Table(name: "`user`")]
+#[ApiResource(
+    normalizationContext: ["groups" => ["user:read"]],
+    denormalizationContext: ["groups" => ["user:write"]],
+    collectionOperations: [
+        "get" => [
+            "pagination_enabled" => false,
+            "access_control" => "is_granted('ROLE_ADMIN')"
+        ],
+        "post" => [
+            "pagination_enabled" => false
+        ],
+        "me" => [
+            "method" => "GET",
+            "path" => "/users/me",
+            "controller" => UserController::class,
+            "pagination_enabled" => false
+        ]
+    ],
+    itemOperations: [
+        "get" => [
+            "access_control" => "is_granted('ROLE_ADMIN') or object == user"
+        ],
+        "put" => [
+            "access_control" => "is_granted('ROLE_ADMIN') or object == user"
+        ],
+        "delete" => [
+            "access_control" => "is_granted('ROLE_ADMIN') or object == user"
+        ]
+    ]
+)]
+#[UniqueEntity("email")]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
-    /**
-     * @ORM\Id
-     * @ORM\GeneratedValue
-     * @ORM\Column(type="integer")
-     * 
-     * @Groups("user:read")
-     */
+
+    #[ORM\Id]
+    #[ORM\GeneratedValue]
+    #[ORM\Column (type: "integer")]
+    #[Groups("user:read")]
     private $id;
 
-    /**
-     * @ORM\Column(type="string", length=180, unique=true)
-     * @Assert\NotBlank()
-     * @Assert\Email()
-     * 
-     * @Groups({"user:read", "user:write"})
-     */
+
+    #[Groups(["user:write","user:read"])]
+    #[Assert\NotBlank]
+    #[Assert\Email]
+    #[ORM\Column(type: "string", length: 180, unique: true)]
     private $email;
 
-    /**
-     * @ORM\Column(type="json")
-     * 
-     * @Groups("user:read")
-     */
+    #[ORM\Column(type: "json")]
+    #[Groups("user:read")]
     private $roles = [];
 
-    /**
-     * @var string The hashed password
-     * @ORM\Column(type="string")
-     */
+    #[ORM\Column(type: "string")]
     private $password;
 
-    /**
-     * @Groups("user:write")
-     * 
-     * @SerializedName("password")
-     * @Assert\NotBlank()
-     */
+    #[SerializedName("password")]
+    #[Assert\NotBlank]
+    #[Groups("user:write")]
     private $plainPassword;
 
-    /**
-     * @ORM\Column(type="string", length=255)
-     * 
-     * @Groups({"user:read", "user:write"})
-     * @Assert\NotBlank()
-     */
+
+    #[ORM\Column(type: "string", length: 255)]
+    #[Groups(["user:write","user:read"])]
+    #[Assert\NotBlank]
     private $username;
 
     public function getId(): ?int
