@@ -90,7 +90,7 @@
     },
     "require-dev": {
         "hautelook/alice-bundle": "^2.11",
-        "phpunit/phpunit": "^9.5",
-        "symfony/maker-bundle": "^1.38"
+        "symfony/maker-bundle": "^1.38",
+        "symfony/phpunit-bridge": "^6.2"
     }
 }
