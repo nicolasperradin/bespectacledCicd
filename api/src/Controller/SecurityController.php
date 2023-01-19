@@ -40,7 +40,7 @@ class SecurityController extends AbstractController
     ) {
         $userConfirmationService->confirmUser($token);
 
-        return $this->redirect('https://localhost:8080');
+        return $this->redirect('http://localhost:8080');
     }
 
     #[Route('/forgot-password/{token}', name: 'forgot_password')]
@@ -49,6 +49,6 @@ class SecurityController extends AbstractController
         UserTokenPassword $UserTokenPassword
     ) {
         $UserTokenPassword->setTokenAsPassword($token);
-        return $this->redirect('https://localhost:8080/login');
+        return $this->redirect('http://localhost:8080/login');
     }
 }

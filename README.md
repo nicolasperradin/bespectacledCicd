@@ -18,7 +18,7 @@ To install the project, please run the following command.
 ```bash
 docker exec -it php bash /var/www/api/installation.sh
 ```
-
+To generate JWT Key:
 ```bash
 docker exec -it php bash openssl genrsa -out config/jwt/private.pem -aes256 4096
 docker exec -it php bash openssl rsa -pubout -in config/jwt/private.pem -out config/jwt/public.pem

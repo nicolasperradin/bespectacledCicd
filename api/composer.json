@@ -1,4 +1,6 @@
 {
+    "name" : "bespectacled/api",
+    "description" : "Api of Bespectacled using API Platform",
     "type": "project",
     "license": "proprietary",
     "minimum-stability": "stable",
@@ -29,6 +31,7 @@
         "symfony/property-access": "5.4.*",
         "symfony/property-info": "5.4.*",
         "symfony/proxy-manager-bridge": "5.4.*",
+        "symfony/requirements-checker": "^2.0",
         "symfony/runtime": "5.4.*",
         "symfony/security-bundle": "5.4.*",
         "symfony/sendinblue-mailer": "5.4.*",
@@ -67,7 +70,8 @@
     "scripts": {
         "auto-scripts": {
             "cache:clear": "symfony-cmd",
-            "assets:install %PUBLIC_DIR%": "symfony-cmd"
+            "assets:install %PUBLIC_DIR%": "symfony-cmd",
+            "requirements-checker": "script"
         },
         "post-install-cmd": [
             "@auto-scripts"
@@ -93,6 +97,8 @@
         "api-platform/schema-generator": "^2.1",
         "symfony/maker-bundle": "^1.38",
         "symfony/stopwatch": "5.4.*",
-        "symfony/web-profiler-bundle": "5.4.*"
+        "symfony/web-profiler-bundle": "5.4.*",
+        "hautelook/alice-bundle": "^2.11",
+        "symfony/phpunit-bridge": "^6.2"
     }
 }
