@@ -1,6 +1,7 @@
 import { createWebHistory, createRouter } from "vue-router";
 import LoginPage from "./components/Login.vue";
 import RegisterPage from "./components/Register.vue";
+import ForgetPasswordPage from "./components/ForgetPassword.vue";
 // lazy-loaded
 const DashboardPage = () => import("./components/Dashboard.vue")
 
@@ -18,6 +19,10 @@ const routes = [
     component: RegisterPage,
   },
   {
+    path: "/forget-password",
+    component: ForgetPasswordPage,
+  },
+  {
     path: "/dashboard",
     name: "dashboard",
     // lazy-loaded
@@ -33,7 +38,7 @@ const router = createRouter({
 export default router;
 
 router.beforeEach((to, from, next) => {
-  const publicPages = ['/login', '/register', '/home'];
+  const publicPages = ['/login', '/register', '/home', '/forget-password'];
   const authRequired = !publicPages.includes(to.path);
   const loggedIn = localStorage.getItem('user');
   // trying to access a restricted page + not logged in
