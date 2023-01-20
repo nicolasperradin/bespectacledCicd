@@ -16,25 +16,28 @@ class Ticketing
     private ?int $id = null;
 
     #[ORM\JoinColumn(nullable: false)]
-    private ?Spectator $spectatorId = null;
+    private ?Cart $cartId = null;
 
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
     private ?Status $status = null;
+
+    #[ORM\ManyToOne(inversedBy: 'ticketId')]
+    private ?Cart $cart = null;
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getSpectatorId(): ?Spectator
+    public function getCartId(): ?Cart
     {
-        return $this->spectatorId;
+        return $this->cartId;
     }
 
-    public function setSpectatorId(?Spectator $spectatorId): self
+    public function setCartId(?Cart $cartId): self
     {
-        $this->spectatorId = $spectatorId;
+        $this->cartId = $cartId;
 
         return $this;
     }
@@ -47,6 +50,18 @@ class Ticketing
     public function setStatus(?Status $status): self
     {
         $this->status = $status;
+
+        return $this;
+    }
+
+    public function getCart(): ?Cart
+    {
+        return $this->cart;
+    }
+
+    public function setCart(?Cart $cart): self
+    {
+        $this->cart = $cart;
 
         return $this;
     }

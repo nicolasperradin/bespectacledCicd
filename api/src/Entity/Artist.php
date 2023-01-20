@@ -4,6 +4,8 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\ArtistRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
@@ -48,6 +50,18 @@ class Artist
 
     #[ORM\Column(length: 10, nullable: true)]
     private ?string $number = null;
+
+    #[ORM\OneToMany(mappedBy: 'artistId', targetEntity: Show::class)]
+    private Collection $shows;
+
+    #[ORM\OneToMany(mappedBy: 'artistId', targetEntity: RoomReservation::class)]
+    private Collection $roomReservations;
+
+    public function __construct()
+    {
+        $this->shows = new ArrayCollection();
+        $this->roomReservations = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -182,6 +196,66 @@ class Artist
     public function setNumber(?string $number): self
     {
         $this->number = $number;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Show>
+     */
+    public function getShows(): Collection
+    {
+        return $this->shows;
+    }
+
+    public function addShow(Show $show): self
+    {
+        if (!$this->shows->contains($show)) {
+            $this->shows->add($show);
+            $show->setArtistId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeShow(Show $show): self
+    {
+        if ($this->shows->removeElement($show)) {
+            // set the owning side to null (unless already changed)
+            if ($show->getArtistId() === $this) {
+                $show->setArtistId(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, RoomReservation>
+     */
+    public function getRoomReservations(): Collection
+    {
+        return $this->roomReservations;
+    }
+
+    public function addRoomReservation(RoomReservation $roomReservation): self
+    {
+        if (!$this->roomReservations->contains($roomReservation)) {
+            $this->roomReservations->add($roomReservation);
+            $roomReservation->setArtistId($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRoomReservation(RoomReservation $roomReservation): self
+    {
+        if ($this->roomReservations->removeElement($roomReservation)) {
+            // set the owning side to null (unless already changed)
+            if ($roomReservation->getArtistId() === $this) {
+                $roomReservation->setArtistId(null);
+            }
+        }
 
         return $this;
     }

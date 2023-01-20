@@ -45,6 +45,9 @@ class Spectator
     #[ORM\Column]
     private ?bool $confirmEmail = null;
 
+    #[ORM\OneToOne(mappedBy: 'spectatorId', cascade: ['persist', 'remove'])]
+    private ?Cart $cart = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -154,6 +157,23 @@ class Spectator
     public function setConfirmEmail(bool $confirmEmail): self
     {
         $this->confirmEmail = $confirmEmail;
+
+        return $this;
+    }
+
+    public function getCart(): ?Cart
+    {
+        return $this->cart;
+    }
+
+    public function setCart(Cart $cart): self
+    {
+        // set the owning side of the relation if necessary
+        if ($cart->getSpectatorId() !== $this) {
+            $cart->setSpectatorId($this);
+        }
+
+        $this->cart = $cart;
 
         return $this;
     }

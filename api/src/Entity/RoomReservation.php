@@ -23,6 +23,17 @@ class RoomReservation
     #[ORM\JoinColumn(nullable: false)]
     private ?Room $roomId = null;
 
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Status $status = null;
+
+    #[ORM\Column]
+    private ?bool $accepted = null;
+
+    #[ORM\ManyToOne(inversedBy: 'roomReservations')]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Artist $artistId = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -48,6 +59,42 @@ class RoomReservation
     public function setRoomId(?Room $roomId): self
     {
         $this->roomId = $roomId;
+
+        return $this;
+    }
+
+    public function getStatus(): ?Status
+    {
+        return $this->status;
+    }
+
+    public function setStatus(?Status $status): self
+    {
+        $this->status = $status;
+
+        return $this;
+    }
+
+    public function isAccepted(): ?bool
+    {
+        return $this->accepted;
+    }
+
+    public function setAccepted(bool $accepted): self
+    {
+        $this->accepted = $accepted;
+
+        return $this;
+    }
+
+    public function getArtistId(): ?Artist
+    {
+        return $this->artistId;
+    }
+
+    public function setArtistId(?Artist $artistId): self
+    {
+        $this->artistId = $artistId;
 
         return $this;
     }
