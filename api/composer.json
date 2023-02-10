@@ -1,6 +1,6 @@
 {
     "name" : "bespectacled/api",
-    "description" : "Api of Bespectacled using API Platform",
+    "description" : "Api of BeSpectacled using API Platform",
     "type": "project",
     "license": "proprietary",
     "minimum-stability": "stable",
@@ -40,6 +40,15 @@
         "symfony/validator": "5.4.*",
         "symfony/yaml": "5.4.*"
     },
+    "require-dev": {
+        "api-platform/schema-generator": "^2.1",
+        "doctrine/doctrine-fixtures-bundle": "^3.4",
+        "hautelook/alice-bundle": "^2.11",
+        "symfony/maker-bundle": "^1.38",
+        "symfony/phpunit-bridge": "^6.2",
+        "symfony/stopwatch": "5.4.*",
+        "symfony/web-profiler-bundle": "5.4.*"
+    },
     "config": {
         "allow-plugins": {
             "composer/package-versions-deprecated": true,
@@ -70,8 +79,7 @@
     "scripts": {
         "auto-scripts": {
             "cache:clear": "symfony-cmd",
-            "assets:install %PUBLIC_DIR%": "symfony-cmd",
-            "requirements-checker": "script"
+            "assets:install %PUBLIC_DIR%": "symfony-cmd"
         },
         "post-install-cmd": [
             "@auto-scripts"
@@ -92,13 +100,5 @@
             "require": "5.4.*",
             "docker": true
         }
-    },
-    "require-dev": {
-        "api-platform/schema-generator": "^2.1",
-        "symfony/maker-bundle": "^1.38",
-        "symfony/stopwatch": "5.4.*",
-        "symfony/web-profiler-bundle": "5.4.*",
-        "hautelook/alice-bundle": "^2.11",
-        "symfony/phpunit-bridge": "^6.2"
     }
 }
