@@ -38,7 +38,7 @@ class UserRegisterSubscriber implements EventSubscriberInterface
    // public function userRegistered(GetResponseForControllerResultEvent $event)
     public function userRegistered(ViewEvent $event)
     {
-        
+
         $user = $event->getControllerResult();
         $method = $event->getRequest()
             ->getMethod();

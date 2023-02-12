@@ -4,50 +4,108 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\ArtistRepository;
-use Doctrine\DBAL\Types\Types;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ArtistRepository::class)]
-#[ApiResource]
+#[ORM\Table(name: "`artist`")]
+#[ApiResource(
+    normalizationContext: ["groups" => ["artist:get"]],
+    denormalizationContext: ["groups" => ["artist:post"]],
+    collectionOperations: [
+        "get" => [
+            "pagination_enabled" => false,
+            "access_control" => "is_granted('ROLE_ADMIN')",
+            "normalization_context" => ["groups" => ["artist:get"]]
+        ],
+        "post" => [
+            "pagination_enabled" => false,
+            "denormalization_context" => ["groups" => ["artist:post"]]
+        ]
+    ],
+    validationGroups: ["artist:get", "artist:post", "artist:put"],
+    itemOperations: [
+        "get" => [
+            "normalization_context" => [
+                "groups" => ["artist:get"],
+                "access_control" => "is_granted('IS_AUTHENTICATED_FULLY') and object == user  or is_granted('ROLE_ADMIN')"
+            ]
+        ],
+        "put" => [
+            "denormalization_context" => ["groups" => ["artist:put"]],
+            "normalization_context" => ["groups" => ["artist:get"]],
+            "access_control" => "is_granted('IS_AUTHENTICATED_FULLY') and object == user or is_granted('ROLE_ADMIN')"
+        ],
+        "delete" => [
+            "access_control" => "is_granted('IS_AUTHENTICATED_FULLY') and object == user or is_granted('ROLE_ADMIN')"
+        ]
+    ]
+)]
+#[ORM\HasLifecycleCallbacks]
+#[UniqueEntity(fields: ["stageName"], message: "This artist already exists")]
 class Artist
 {
+
+    #[ORM\PrePersist]
+    #[ORM\PreUpdate]
+    public function updatedTimestamps(): void
+    {
+        $this->setUpdatedAt(new \DateTime('now'));
+        if ($this->getCreatedAt() === null) {
+            $this->setCreatedAt(new \DateTime('now'));
+        }
+    }
+
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 55)]
-    private ?string $lastname = null;
+    #[Groups (["artist:get", "artist:post"])]
+    #[ORM\Column(type: "string", length: 55, nullable: true)]
+    #[Assert\NotBlank]
+    private $lastname;
 
-    #[ORM\Column(length: 55)]
-    private ?string $firstname = null;
+    #[Groups (["artist:get", "artist:post"])]
+    #[ORM\Column(type: "string", length: 55, nullable: true)]
+    #[Assert\NotBlank]
+    private $firstname ;
 
-    #[ORM\Column(length: 55, nullable: true)]
-    private ?string $stageName = null;
+    #[Groups (["artist:get", "artist:post"])]
+    #[ORM\Column(type: "string", length: 55, nullable: true)]
+    #[Assert\NotBlank]
+    private $stageName ;
 
-    #[ORM\Column(length: 16)]
-    private ?string $password = null;
+    #[Groups (["artist:get", "artist:post"])]
+    #[ORM\Column(type: "string", length: 10, nullable: true)]
+    private $phoneNumber;
 
-    #[ORM\Column(length: 255)]
-    private ?string $email = null;
+    #[ORM\Column(type: "boolean", options: ["default" => "0"])]
+    private $validatedAccount = false;
 
-    #[ORM\Column]
-    private ?bool $confirmEmail = null;
+    #[Groups(["artist:get"])]
+    #[ORM\Column(type: "datetime")]
+    private $createdAt;
 
-    #[ORM\Column]
-    private ?bool $validatedAccount = null;
+    #[Groups(["artist:get"])]
+    #[ORM\Column(type: "datetime", nullable: true)]
+    private $updatedAt;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $created = null;
+    #[Groups(["artist:get"])]
+    #[ORM\Column(type: "datetime", nullable: true)]
+    private $deletedAt;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    private ?\DateTimeInterface $updated = null;
+    #[ORM\ManyToMany(targetEntity: Event::class, mappedBy: 'artists')]
+    private Collection $events;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE, nullable: true)]
-    private ?\DateTimeInterface $deleted = null;
-
-    #[ORM\Column(length: 10, nullable: true)]
-    private ?string $number = null;
+    public function __construct()
+    {
+        $this->events = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -90,42 +148,6 @@ class Artist
         return $this;
     }
 
-    public function getPassword(): ?string
-    {
-        return $this->password;
-    }
-
-    public function setPassword(string $password): self
-    {
-        $this->password = $password;
-
-        return $this;
-    }
-
-    public function getEmail(): ?string
-    {
-        return $this->email;
-    }
-
-    public function setEmail(string $email): self
-    {
-        $this->email = $email;
-
-        return $this;
-    }
-
-    public function isConfirmEmail(): ?bool
-    {
-        return $this->confirmEmail;
-    }
-
-    public function setConfirmEmail(bool $confirmEmail): self
-    {
-        $this->confirmEmail = $confirmEmail;
-
-        return $this;
-    }
-
     public function isValidatedAccount(): ?bool
     {
         return $this->validatedAccount;
@@ -138,50 +160,77 @@ class Artist
         return $this;
     }
 
-    public function getCreated(): ?\DateTimeInterface
+    public function getPhoneNumber(): ?string
     {
-        return $this->created;
+        return $this->phoneNumber;
     }
 
-    public function setCreated(\DateTimeInterface $created): self
+    public function setPhoneNumber(?string $phoneNumber): self
     {
-        $this->created = $created;
+        $this->phoneNumber = $phoneNumber;
 
         return $this;
     }
 
-    public function getUpdated(): ?\DateTimeInterface
+    public function getCreatedAt(): ?\DateTimeInterface
     {
-        return $this->updated;
+        return $this->createdAt;
     }
 
-    public function setUpdated(\DateTimeInterface $updated): self
+    public function setCreatedAt(\DateTimeInterface $createdAt): self
     {
-        $this->updated = $updated;
+        $this->createdAt = $createdAt;
 
         return $this;
     }
 
-    public function getDeleted(): ?\DateTimeInterface
+    public function getUpdatedAt(): ?\DateTimeInterface
     {
-        return $this->deleted;
+        return $this->updatedAt;
     }
 
-    public function setDeleted(\DateTimeInterface $deleted): self
+    public function setUpdatedAt(?\DateTimeInterface $updatedAt): self
     {
-        $this->deleted = $deleted;
+        $this->updatedAt = $updatedAt;
 
         return $this;
     }
 
-    public function getNumber(): ?string
+    public function getDeletedAt(): ?\DateTimeInterface
     {
-        return $this->number;
+        return $this->deletedAt;
     }
 
-    public function setNumber(?string $number): self
+    public function setDeletedAt(\DateTimeInterface $deletedAt): self
     {
-        $this->number = $number;
+        $this->deletedAt = $deletedAt;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Event>
+     */
+    public function getEvents(): Collection
+    {
+        return $this->events;
+    }
+
+    public function addEvent(Event $event): self
+    {
+        if (!$this->events->contains($event)) {
+            $this->events->add($event);
+            $event->addArtist($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEvent(Event $event): self
+    {
+        if ($this->events->removeElement($event)) {
+            $event->removeArtist($this);
+        }
 
         return $this;
     }

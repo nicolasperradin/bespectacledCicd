@@ -5,9 +5,37 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\TicketingRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Enum\TicketingStatusEnum;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: TicketingRepository::class)]
-#[ApiResource]
+#[ApiResource(
+    collectionOperations: [
+        'get' => [
+            'normalization_context' => [
+                'groups' => ['ticketing:read']
+            ]
+        ],
+        'post' => [
+            'denormalization_context' => [
+                'groups' => ['ticketing:write']
+            ]
+        ]
+    ],
+    itemOperations: [
+        'get' => [
+            'normalization_context' => [
+                'groups' => ['ticketing:read']
+            ]
+        ],
+        'put' => [
+            'denormalization_context' => [
+                'groups' => ['ticketing:write']
+            ]
+        ]
+    ]
+)]
 class Ticketing
 {
     #[ORM\Id]
@@ -15,39 +43,63 @@ class Ticketing
     #[ORM\Column]
     private ?int $id = null;
 
+    #[ORM\ManyToOne(inversedBy: 'ticketings')]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Spectator $spectatorId = null;
+    #[Groups(['ticketing:read', 'ticketing:write'])]
+    #[Assert\NotBlank]
+    private ?User $buyer = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\OneToOne(cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: false)]
-    private ?Status $status = null;
+    #[Groups(['ticketing:read', 'ticketing:write'])]
+    #[Assert\NotBlank]
+    private ?Event $event = null;
+
+    #[ORM\Column(type: Types::INTEGER)]
+    #[Groups(['ticketing:read', 'ticketing:write'])]
+    #[Assert\NotBlank]
+    private TicketingStatusEnum $status = TicketingStatusEnum::PENDING;
+
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getSpectatorId(): ?Spectator
+    public function getBuyer(): ?User
     {
-        return $this->spectatorId;
+        return $this->buyer;
     }
 
-    public function setSpectatorId(?Spectator $spectatorId): self
+    public function setBuyer(?User $buyer): self
     {
-        $this->spectatorId = $spectatorId;
+        $this->buyer = $buyer;
 
         return $this;
     }
 
-    public function getStatus(): ?Status
+    public function getEvent(): ?Event
+    {
+        return $this->event;
+    }
+
+    public function setEvent(?Event $event): self
+    {
+        $this->event = $event;
+
+        return $this;
+    }
+
+    public function getStatus(): TicketingStatusEnum
     {
         return $this->status;
     }
 
-    public function setStatus(?Status $status): self
+    public function setStatus(TicketingStatusEnum $status): self
     {
         $this->status = $status;
 
         return $this;
     }
+
 }
