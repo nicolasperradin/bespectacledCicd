@@ -6,6 +6,8 @@ use ApiPlatform\Metadata\ApiResource;
 use App\Repository\TicketingRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Enum\TicketingStatusEnum;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: TicketingRepository::class)]
 #[ApiResource(
@@ -44,15 +46,18 @@ class Ticketing
     #[ORM\ManyToOne(inversedBy: 'ticketings')]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['ticketing:read', 'ticketing:write'])]
+    #[Assert\NotBlank]
     private ?User $buyer = null;
 
     #[ORM\OneToOne(cascade: ['persist', 'remove'])]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['ticketing:read', 'ticketing:write'])]
+    #[Assert\NotBlank]
     private ?Event $event = null;
 
     #[ORM\Column(type: Types::INTEGER)]
     #[Groups(['ticketing:read', 'ticketing:write'])]
+    #[Assert\NotBlank]
     private TicketingStatusEnum $status = TicketingStatusEnum::PENDING;
 
 

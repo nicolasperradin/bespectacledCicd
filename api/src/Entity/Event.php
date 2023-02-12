@@ -8,6 +8,8 @@ use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Metadata\ApiResource;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: EventRepository::class)]
 #[ApiResource(
@@ -45,20 +47,27 @@ class Event
 
     #[ORM\Column(length: 255)]
     #[Groups(['event:read', 'event:write'])]
+    #[Assert\NotBlank]
+    #[Assert\Length(min: 3, max: 255)]
     private ?string $name = null;
 
     #[ORM\ManyToOne(inversedBy: 'events')]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['event:read', 'event:write'])]
+    #[Assert\NotBlank]
     private ?Room $room = null;
 
     #[ORM\ManyToMany(targetEntity: Artist::class, inversedBy: 'events')]
     #[ORM\JoinTable(name: 'event_artist')]
     #[Groups(['event:read', 'event:write'])]
+    #[Assert\NotBlank]
+    #[Assert\Count(min: 1)]
     private Collection $artists;
 
     #[ORM\Column(type: Types::SMALLINT)]
     #[Groups(['event:read', 'event:write'])]
+    #[Assert\NotBlank]
+    #[Assert\Positive]
     private ?int $price = null;
 
     public function __construct()

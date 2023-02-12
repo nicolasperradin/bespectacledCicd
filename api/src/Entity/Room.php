@@ -11,8 +11,6 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
-
-
 #[ORM\Entity(repositoryClass: RoomRepository::class)]
 #[ORM\Table(name: "`room`")]
 #[UniqueEntity(fields: ["name"], message: "This room already exists")]
@@ -56,6 +54,7 @@ class Room
 
     #[ORM\Column]
     #[Assert\NotBlank]
+    #[Assert\Positive]
     #[Groups(['room:read', 'room:write'])]
     private ?float $price = null;
 

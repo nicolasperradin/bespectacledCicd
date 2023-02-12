@@ -7,6 +7,8 @@ use App\Repository\RoomReservationRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use Enum\RoomReservationStatusEnum;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: RoomReservationRepository::class)]
 #[ApiResource(
@@ -49,15 +51,18 @@ class RoomReservation
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['roomReservation:read', 'roomReservation:write'])]
+    #[Assert\NotBlank]
     private ?Room $roomId = null;
 
     #[ORM\ManyToOne(inversedBy: 'roomReservations')]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['roomReservation:read', 'roomReservation:write'])]
+    #[Assert\NotBlank]
     private ?User $client = null;
 
     #[ORM\Column(type: Types::INTEGER)]
     #[Groups(['roomReservation:read', 'roomReservation:write'])]
+    #[Assert\NotBlank]
     private RoomReservationStatusEnum $status = RoomReservationStatusEnum::PENDING;
     
 
