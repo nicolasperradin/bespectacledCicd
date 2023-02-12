@@ -4,10 +4,39 @@ namespace App\Entity;
 
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\RoomRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Serializer\Annotation\Groups;
+use Symfony\Component\Validator\Constraints as Assert;
+
+
 
 #[ORM\Entity(repositoryClass: RoomRepository::class)]
-#[ApiResource]
+#[ORM\Table(name: "`room`")]
+#[UniqueEntity(fields: ["name"], message: "This room already exists")]
+#[ApiResource(
+    normalizationContext: ['groups' => ['room:read']],
+    denormalizationContext: ['groups' => ['room:write']],
+    collectionOperations: [
+        'get' => [
+            'normalization_context' => ['groups' => ['room:read']]
+        ],
+        'post' => [
+            'denormalization_context' => ['groups' => ['room:write']]
+        ]
+    ],
+    itemOperations: [
+        'get' => [
+            'normalization_context' => ['groups' => ['room:read']]
+        ],
+        'put' => [
+            'denormalization_context' => ['groups' => ['room:write']]
+        ],
+        'delete'
+    ]
+)]
 class Room
 {
     #[ORM\Id]
@@ -15,14 +44,29 @@ class Room
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 55)]
-    private ?string $name = null;
+    #[ORM\Column(type: "string", length: 55)]
+    #[Assert\NotBlank]
+    #[Groups(['room:read', 'room:write'])]
+    private $name;
 
     #[ORM\Column]
-    private ?int $Seats = null;
+    #[Assert\NotBlank]
+    #[Groups(['room:read', 'room:write'])]
+    private ?int $nbSeats = null;
 
     #[ORM\Column]
+    #[Assert\NotBlank]
+    #[Groups(['room:read', 'room:write'])]
     private ?float $price = null;
+
+    #[ORM\OneToMany(mappedBy: 'room', targetEntity: Event::class)]
+    #[Groups(['room:read'])]
+    private Collection $events;
+
+    public function __construct()
+    {
+        $this->events = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -41,14 +85,14 @@ class Room
         return $this;
     }
 
-    public function getSeats(): ?int
+    public function getNbSeats(): ?int
     {
-        return $this->Seats;
+        return $this->nbSeats;
     }
 
-    public function setSeats(int $Seats): self
+    public function setNbSeats(int $nbSeats): self
     {
-        $this->Seats = $Seats;
+        $this->nbSeats = $nbSeats;
 
         return $this;
     }
@@ -61,6 +105,36 @@ class Room
     public function setPrice(float $price): self
     {
         $this->price = $price;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Event>
+     */
+    public function getEvents(): Collection
+    {
+        return $this->events;
+    }
+
+    public function addEvent(Event $event): self
+    {
+        if (!$this->events->contains($event)) {
+            $this->events->add($event);
+            $event->setRoom($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEvent(Event $event): self
+    {
+        if ($this->events->removeElement($event)) {
+            // set the owning side to null (unless already changed)
+            if ($event->getRoom() === $this) {
+                $event->setRoom(null);
+            }
+        }
 
         return $this;
     }
