@@ -159,10 +159,76 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[Groups("user:get")]
     private Collection $ticketings;
 
+    #[ORM\OneToMany(mappedBy: 'buyer', targetEntity: PaymentTransaction::class)]
+    private Collection $paymentTransactions;
+
+    #[ORM\Column(type: "boolean", options: ["default" => "0"])]
+    private $validatedAccountArtist = false;
+
+    #[Groups(["user:get"])]
+    #[ORM\Column(type: "datetime", nullable: true)]
+    private $deletedAt;
+
+    #[ORM\ManyToMany(targetEntity: Event::class, mappedBy: 'artists')]
+    private Collection $events;
+
     public function __construct()
     {
         $this->roomReservations = new ArrayCollection();
         $this->ticketings = new ArrayCollection();
+        $this->paymentTransactions = new ArrayCollection();
+        $this->events = new ArrayCollection();
+    }
+
+    public function isValidatedAccountArtist(): ?bool
+    {
+        return $this->validatedAccountArtist;
+    }
+
+    public function setValidatedAccountArtist(bool $validatedAccountArtist): self
+    {
+        $this->validatedAccountArtist = $validatedAccountArtist;
+
+        return $this;
+    }
+
+    public function getDeletedAt(): ?\DateTimeInterface
+    {
+        return $this->deletedAt;
+    }
+
+    public function setDeletedAt(\DateTimeInterface $deletedAt): self
+    {
+        $this->deletedAt = $deletedAt;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Event>
+     */
+    public function getEvents(): Collection
+    {
+        return $this->events;
+    }
+
+    public function addEvent(Event $event): self
+    {
+        if (!$this->events->contains($event)) {
+            $this->events->add($event);
+            $event->addArtist($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEvent(Event $event): self
+    {
+        if ($this->events->removeElement($event)) {
+            $event->removeArtist($this);
+        }
+
+        return $this;
     }
 
 
@@ -422,6 +488,36 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
             // set the owning side to null (unless already changed)
             if ($ticketing->getBuyer() === $this) {
                 $ticketing->setBuyer(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, PaymentTransaction>
+     */
+    public function getPaymentTransactions(): Collection
+    {
+        return $this->paymentTransactions;
+    }
+
+    public function addPaymentTransaction(PaymentTransaction $paymentTransaction): self
+    {
+        if (!$this->paymentTransactions->contains($paymentTransaction)) {
+            $this->paymentTransactions->add($paymentTransaction);
+            $paymentTransaction->setBuyer($this);
+        }
+
+        return $this;
+    }
+
+    public function removePaymentTransaction(PaymentTransaction $paymentTransaction): self
+    {
+        if ($this->paymentTransactions->removeElement($paymentTransaction)) {
+            // set the owning side to null (unless already changed)
+            if ($paymentTransaction->getBuyer() === $this) {
+                $paymentTransaction->setBuyer(null);
             }
         }
 

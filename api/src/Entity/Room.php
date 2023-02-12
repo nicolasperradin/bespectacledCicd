@@ -32,7 +32,9 @@ use Symfony\Component\Validator\Constraints as Assert;
         'put' => [
             'denormalization_context' => ['groups' => ['room:write']]
         ],
-        'delete'
+        'delete' => [
+            'denormalization_context' => ['groups' => ['room:write']]
+        ]
     ]
 )]
 class Room

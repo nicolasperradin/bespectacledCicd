@@ -5,9 +5,10 @@ namespace App\Entity;
 use ApiPlatform\Metadata\ApiResource;
 use App\Repository\TicketingRepository;
 use Doctrine\ORM\Mapping as ORM;
-use Enum\TicketingStatusEnum;
+use App\Enum\TicketingStatusEnum;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Doctrine\DBAL\Types\Types;
 
 #[ORM\Entity(repositoryClass: TicketingRepository::class)]
 #[ApiResource(
@@ -58,7 +59,10 @@ class Ticketing
     #[ORM\Column(type: Types::INTEGER)]
     #[Groups(['ticketing:read', 'ticketing:write'])]
     #[Assert\NotBlank]
-    private TicketingStatusEnum $status = TicketingStatusEnum::PENDING;
+    private int $status = TicketingStatusEnum::PENDING;
+
+    #[ORM\ManyToOne(inversedBy: 'ticketings')]
+    private ?PaymentTransaction $paymentTransaction = null;
 
 
     public function getId(): ?int
@@ -98,6 +102,18 @@ class Ticketing
     public function setStatus(TicketingStatusEnum $status): self
     {
         $this->status = $status;
+
+        return $this;
+    }
+
+    public function getPaymentTransaction(): ?PaymentTransaction
+    {
+        return $this->paymentTransaction;
+    }
+
+    public function setPaymentTransaction(?PaymentTransaction $paymentTransaction): self
+    {
+        $this->paymentTransaction = $paymentTransaction;
 
         return $this;
     }

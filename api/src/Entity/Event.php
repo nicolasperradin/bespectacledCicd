@@ -57,22 +57,27 @@ class Event
     #[Assert\NotBlank]
     private ?Room $room = null;
 
-    #[ORM\ManyToMany(targetEntity: Artist::class, inversedBy: 'events')]
+    #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'events')]
     #[ORM\JoinTable(name: 'event_artist')]
     #[Groups(['event:read', 'event:write'])]
     #[Assert\NotBlank]
     #[Assert\Count(min: 1)]
     private Collection $artists;
 
-    #[ORM\Column(type: Types::SMALLINT)]
+    #[ORM\Column(type: "float")]
     #[Groups(['event:read', 'event:write'])]
     #[Assert\NotBlank]
     #[Assert\Positive]
     private ?int $price = null;
 
+    #[ORM\OneToMany(mappedBy: 'event', targetEntity: Schedule::class)]
+    #[Groups(['event:read', 'event:write'])]
+    private Collection $schedules;
+
     public function __construct()
     {
         $this->artists = new ArrayCollection();
+        $this->schedules = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -112,7 +117,7 @@ class Event
         return $this->artists;
     }
 
-    public function addArtist(Artist $artist): self
+    public function addArtist(User $artist): self
     {
         if (!$this->artists->contains($artist)) {
             $this->artists->add($artist);
@@ -121,21 +126,51 @@ class Event
         return $this;
     }
 
-    public function removeArtist(Artist $artist): self
+    public function removeArtist(User $artist): self
     {
         $this->artists->removeElement($artist);
 
         return $this;
     }
 
-    public function getPrice(): ?int
+    public function getPrice(): ?float
     {
         return $this->price;
     }
 
-    public function setPrice(int $price): self
+    public function setPrice(float $price): self
     {
         $this->price = $price;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Schedule>
+     */
+    public function getSchedules(): Collection
+    {
+        return $this->schedules;
+    }
+
+    public function addSchedule(Schedule $schedule): self
+    {
+        if (!$this->schedules->contains($schedule)) {
+            $this->schedules->add($schedule);
+            $schedule->setEvent($this);
+        }
+
+        return $this;
+    }
+
+    public function removeSchedule(Schedule $schedule): self
+    {
+        if ($this->schedules->removeElement($schedule)) {
+            // set the owning side to null (unless already changed)
+            if ($schedule->getEvent() === $this) {
+                $schedule->setEvent(null);
+            }
+        }
 
         return $this;
     }
