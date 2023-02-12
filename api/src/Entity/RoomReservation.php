@@ -6,7 +6,7 @@ use ApiPlatform\Metadata\ApiResource;
 use App\Repository\RoomReservationRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use Enum\RoomReservationStatusEnum;
+use App\Enum\RoomReservationStatusEnum;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -63,7 +63,12 @@ class RoomReservation
     #[ORM\Column(type: Types::INTEGER)]
     #[Groups(['roomReservation:read', 'roomReservation:write'])]
     #[Assert\NotBlank]
-    private RoomReservationStatusEnum $status = RoomReservationStatusEnum::PENDING;
+    private int $status = RoomReservationStatusEnum::PENDING;
+
+    #[ORM\ManyToOne(inversedBy: 'roomReservations')]
+    #[ORM\JoinColumn(nullable: true)]
+    #[Groups(['roomReservation:read', 'roomReservation:write'])]
+    private ?PaymentTransaction $paymentTransaction = null;
     
 
     public function getId(): ?int
@@ -115,6 +120,18 @@ class RoomReservation
     public function setStatus(RoomReservationStatusEnum $status): self
     {
         $this->status = $status;
+
+        return $this;
+    }
+
+    public function getPaymentTransaction(): ?PaymentTransaction
+    {
+        return $this->paymentTransaction;
+    }
+
+    public function setPaymentTransaction(?PaymentTransaction $paymentTransaction): self
+    {
+        $this->paymentTransaction = $paymentTransaction;
 
         return $this;
     }
