@@ -4,15 +4,10 @@ import { ref, onMounted } from 'vue'
 import EventService from '../services/event.service'
 import VenueService from '../services/venue.service'
 
-const events = ref([])
-const models = ref({})
 const menus = ref({})
-const chips = ref({})
+const events = ref([])
+const groups = ref({})
 const sortedVenues = ref({})
-// const filteredEvents = computed(() => {
-// 	if (!models.value) return []
-// 	return events.filter(e => e.venue === sortedVenues.value[models.value].id)
-// })
 
 onMounted(async () => {
 	const { data } = await EventService.all()
@@ -20,14 +15,11 @@ onMounted(async () => {
 
 	events.value = data
 
-	// for each event
-	menus.value = Array.from({ length: data.length }, () => false)
-
 	// Group venues by type
 	sortedVenues.value = venues.reduce((acc, cur) => {
+		// menus.value = Array(calendarSchedule.value.length).fill([])
 		if (!menus.value[cur.type]) menus.value[cur.type] = Array.from({ length: data.length }, () => false) // as many menus as events so we have one menu per event
-		if (!chips.value[cur.type]) chips.value[cur.type] = null // null because no chip should be selected by default
-		if (!models.value[cur.type]) models.value[cur.type] = 0 // 0 for the first venue of each group to be selected by default
+		if (!groups.value[cur.type]) groups.value[cur.type] = null // default selected model
 		if (!acc[cur.type]) acc[cur.type] = []
 		acc[cur.type].push(cur)
 		return acc
@@ -42,11 +34,12 @@ const onIntersect = {
 
 <template>
 	<v-parallax :src="require('@/assets/stadium.jpeg')">
-		<div class="d-flex flex-column fill-height justify-center align-center text-white">
-			<h1 class="text-h4 font-weight-thin mb-4">BeSpectacled</h1>
-			<h4>Book tickets for events, concerts, and more!</h4>
+		<div class="d-flex flex-column fill-height justify-center align-center">
+			<div class="text-h2 font-weight-thin mb-4">BeSpectacled Venues</div>
+			<div class="text-h4 text-secondary">Meet your favorite artists in our venues</div>
 
-			<v-btn color="primary"
+			<v-btn
+				color="primary"
 				prepend-icon="fa fa-fade fa-computer-mouse"
 				append-icon="fa fa-bounce fa-arrow-down"
 				size="x-large"
@@ -56,8 +49,8 @@ const onIntersect = {
 	</v-parallax>
 
 	<v-sheet v-for="key in Object.keys(sortedVenues)" :key="key" class="mx-auto" elevation="8" :class="key === Object.keys(sortedVenues)[0] ? 'mb-4' : ''">
-
-		<v-slide-group v-model="models[key]" class="pa-4" selected-class="bg-primary border-lg" center-active mandatory show-arrows v-intersect="onIntersect">
+		<div class="text-h4 font-weight-thin px-4 pt-4">For {{ key }}s</div>
+		<v-slide-group v-model="groups[key]" selected-class="bg-primary border-lg" show-arrows v-intersect="onIntersect">
 			<v-slide-group-item v-for="{ id, name, src } in sortedVenues[key]" :key="id" v-slot="{ isSelected, toggle, selectedClass }">
 				<v-card color="grey-lighten-1" :class="['ma-4 d-flex', selectedClass]" height="200" width="200" @click="toggle">
 					<v-img :src="src" cover class="d-flex fill-height align-center text-center">
@@ -70,19 +63,22 @@ const onIntersect = {
 		</v-slide-group>
 	
 		<v-expand-transition>
-			<v-sheet v-if="models[key] != null" class="d-flex flex-column fill-height justify-center align-center text-white">
-				<div class="text-h4 font-weight-thin">{{ sortedVenues[key][models[key]].name }}</div>
-				<div class="text-h6 text-secondary">{{ sortedVenues[key][models[key]].seats }} seats</div>
+			<v-sheet v-if="groups[key] != null" class="d-flex flex-column fill-height justify-center align-center text-white">
+				<div class="text-h4 font-weight-thin">{{ sortedVenues[key][groups[key]].name }}</div>
+				<div class="text-h6 text-secondary">{{ sortedVenues[key][groups[key]].seats }} seats</div>
 
-				<v-divider />
+				<!-- TODO v-notify="[sortedVenues[key][groups[key]], ' succesfully booked!']" -->
+				<v-btn color="primary" prepend-icon="fa fa-key fa-flip" @click="() => $router.push({ name: 'ticketing', query: { venue: sortedVenues[key][groups[key]].id } })">
+					Book for ${{ sortedVenues[key][groups[key]].price }}
+				</v-btn>
 
 				<div class="text-overline">Events at this venue</div>
 
 				<v-card-text>
-					<v-chip-group v-model="chips[key]" selected-class="text-deep-purple-accent-4" mandatory column>
-						<v-menu v-for="({ id, title, price, src }, i) in events.filter(e => e.venue === sortedVenues[key][models[key]].id)" :key="title" v-model="menus[key][i]" location="top start" origin="top start" transition="scale-transition">
+					<v-chip-group column>
+						<v-menu v-for="({ id, title, price, src }, i) in events.filter(e => e.venue === sortedVenues[key][groups[key]].id)" :key="title" v-model="menus[key][i]" location="top start" origin="top start" transition="scale-transition">
 							<template v-slot:activator="{ props }">
-								<v-chip pill v-bind="props" link>
+								<v-chip v-bind="props" pill link>
 									<v-avatar start :image="src" />
 									{{ title }}
 								</v-chip>
@@ -90,14 +86,7 @@ const onIntersect = {
 
 							<v-card width="max-content">
 								<v-list bg-color="black">
-									<v-list-item>
-										<template v-slot:prepend>
-											<v-avatar :image="src"></v-avatar>
-										</template>
-							
-										<v-list-item-title>{{ title }}</v-list-item-title>
-										<v-list-item-subtitle>Min. ${{ price }} per seat</v-list-item-subtitle>
-							
+									<v-list-item :title="title" :subtitle="`Min. $${price} per seat`" :prepend-avatar="src">							
 										<template v-slot:append>
 											<v-list-item-action>
 												<v-btn icon variant="text" @click="menus[key][i] = false">
@@ -107,11 +96,11 @@ const onIntersect = {
 										</template>
 									</v-list-item>
 								</v-list>
-							
+
 								<v-list>
-									<v-list-item link prepend-icon="fa fa-circle-info" title="See Event Details" @click="() => $router.push({ name: 'event', params: { id } })" />
-									<v-list-item link prepend-icon="fa fa-calendar-days" title="Open Schedule" @click="() => alert('This feature has not been implemented yet.')" />
-									<v-list-item link prepend-icon="fa fa-ticket" title="Buy Tickets" @click="() => alert('This feature has not been implemented yet.')" />
+									<v-list-item link prepend-icon="fa fa-circle-info" title="View Event Details" @click="() => $router.push({ name: 'event', params: { id } })" />
+									<v-list-item link prepend-icon="fa fa-calendar-days" title="Check Available Times" @click="() => $router.push({ name: 'schedule', query: { event: id } })" />
+									<v-list-item link prepend-icon="fa fa-ticket" title="Buy Tickets" @click="() => $router.push({ name: 'ticketing', query: { event: id } })" />
 								</v-list>
 							</v-card>
 						</v-menu>
@@ -124,7 +113,7 @@ const onIntersect = {
 
 <style scoped>
 .v-parallax {
-	height: calc(100vh - (48px + 16px * 2));
+	height: calc(100vh - (48px + 16px * 2)) !important;
 	margin-bottom: 16px;
 }
 

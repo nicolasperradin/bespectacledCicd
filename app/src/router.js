@@ -9,6 +9,7 @@ import Artists from './components/ArtistsPage.vue'
 import Profile from './components/ProfilePage.vue'
 import NotFound from './components/NotFoundPage.vue'
 import Register from './components/RegisterPage.vue'
+import Schedule from './components/SchedulePage.vue'
 import ForgotPassword from './components/ForgotPasswordPage.vue'
 
 const routes = [
@@ -21,7 +22,11 @@ const routes = [
 	{ path: '/events/:id', name: 'event', component: Blank },
 	{ path: '/venues', name: 'venues', component: Venues },
 	{ path: '/venues/:id', name: 'venue', component: Blank },
+	{ path: '/schedule', name: 'schedule', component: Schedule },
+	{ path: '/ticketing', name: 'ticketing', component: Blank },
 
+	{ path: '/orders', name: 'orders', component: Blank },
+	{ path: '/tickets', name: 'tickets', component: Blank },
 	{ path: '/profile', name: 'profile', component: Profile },
 
 	{ path: '/login', name: 'login', component: Login },
@@ -37,7 +42,7 @@ export default router
 
 router.beforeEach((to, from, next) => {
 	const publicPages = [
-		'/', '/news', '/artists', '/events', '/venues',
+		'/', '/news', '/artists', '/events', '/venues', '/schedule',
 		'/login', '/register', '/forget-password',
 		'/profile'
 	]

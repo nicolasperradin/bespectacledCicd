@@ -15,7 +15,8 @@ const onIntersect = {
 			<h1 class="text-h4 font-weight-thin mb-4">BeSpectacled</h1>
 			<h4>Book tickets for events, concerts, and more!</h4>
 
-			<v-btn color="primary"
+			<v-btn
+				color="primary"
 				prepend-icon="fa fa-fade fa-computer-mouse"
 				append-icon="fa fa-bounce fa-arrow-down"
 				size="x-large"
@@ -29,6 +30,7 @@ const onIntersect = {
 			<v-card height="200" v-intersect="onIntersect" />
 		</v-col>
 	</v-row>
+
 	<v-sheet class="mx-auto" elevation="8" max-width="800">
 		<v-slide-group v-model="model" class="pa-4" selected-class="bg-primary" show-arrows>
 			<v-slide-group-item v-for="n in 15" :key="n" v-slot="{ isSelected, toggle, selectedClass }">

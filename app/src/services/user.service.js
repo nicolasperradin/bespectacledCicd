@@ -4,15 +4,14 @@ import headers from './headers'
 
 const API_URL = 'http://localhost/api/'
 
-// localStorage.setItem('user', '{"username":"root1", "email": "root1@root.com", "verifiedAt": "1675969162119"}')
-
 const data = [
 	{ id: 1, username: 'root1', email: 'root1@root.com', roles: ['ROLE_ADMIN'] },
 	{ id: 2, username: 'root2', email: 'root2@root.com', roles: ['ROLE_USER'] },
 	{ id: 3, username: 'Billy Joel', email: 'billyjoel@bespectacled.com', roles: ['ROLE_ARTIST'] },
 	{ id: 4, username: 'Taylor Swift', email: 'taylorswift@bespectacled.com', roles: ['ROLE_ARTIST'] },
 	{ id: 5, username: 'Madonna', email: 'madonna@bespectacled.com', roles: ['ROLE_ARTIST'] },
-	{ id: 6, username: 'Wizkid', email: 'wizkid@bespectacled.com', roles: ['ROLE_ARTIST'] }
+	{ id: 6, username: 'Wizkid', email: 'wizkid@bespectacled.com', roles: ['ROLE_ARTIST'] },
+	{ id: 6, username: 'Beyonce', email: 'beyonce@bespectacled.com', roles: ['ROLE_ARTIST'] }
 ]
 
 class UserService {
@@ -27,11 +26,13 @@ class UserService {
 	}
 
 	getProfile() {
-		return axios.get(API_URL + 'users/me', { headers: headers() })
+		return Promise.resolve({ data: JSON.parse(localStorage.getItem('user')) })
+		// return axios.get(API_URL + 'users/me', { headers: headers() })
 	}
 
 	updateProfile(data) {
-		return axios.put(API_URL + 'users/me', data, { headers: headers() })
+		return Promise.resolve({ data: { ...JSON.parse(localStorage.getItem('user')), ...data } }).then(response => localStorage.setItem('user', JSON.stringify(response.data)))
+		// return axios.put(API_URL + 'users/me', data, { headers: headers() })
 	}
 
 	resetPassword(data) {

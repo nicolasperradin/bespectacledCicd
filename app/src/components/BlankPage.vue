@@ -12,7 +12,8 @@ const onIntersect = {
 			<h1 class="text-primary text-h1 font-weight-thin mb-4">W. I. P.</h1>
 			<h4 class="text-amber">Please check back later as this page is still under construction.</h4>
 
-			<v-btn color="primary"
+			<v-btn
+				color="primary"
 				prepend-icon="fa fa-fade fa-arrow-left"
 				append-icon="fa fa-bounce fa-home"
 				size="x-large"

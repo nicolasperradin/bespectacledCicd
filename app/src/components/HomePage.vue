@@ -1,5 +1,4 @@
 <script setup>
-// import neonLights from '../assets/neon-lights.jpeg'
 const slides = [
 	require('@/assets/maestro.jpeg'),
 	require('@/assets/carnival.jpeg'),

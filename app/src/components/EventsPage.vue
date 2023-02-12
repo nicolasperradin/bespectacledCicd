@@ -11,7 +11,8 @@
 			<h1 class="text-h4 font-weight-thin mb-4">BeSpectacled</h1>
 			<h4>Book tickets for events, concerts, and more!</h4>
 
-			<v-btn color="primary"
+			<v-btn
+				color="primary"
 				prepend-icon="fa fa-fade fa-computer-mouse"
 				append-icon="fa fa-bounce fa-arrow-down"
 				size="x-large"

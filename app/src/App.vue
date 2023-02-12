@@ -20,8 +20,9 @@ const scrolled = ref(false)
 const categories = ref([
 	{ name: 'News', icon: 'fa fa-newspaper', to: '/news/', key: 'title', children: [] },
 	{ name: 'Artists', icon: 'fa fa-user-tie', to: '/artists/', key: 'username', children: [] },
-	{ name: 'Events', icon: 'fa fa-calendar-days', to: '/events/', key: 'title', children: [] },
-	{ name: 'Venues', icon: 'fa fa-location-dot', to: '/venues/', key: 'name', children: [] }
+	{ name: 'Events', icon: 'fa fa-star', to: '/events/', key: 'title', children: [] },
+	{ name: 'Venues', icon: 'fa fa-location-dot', to: '/venues/', key: 'name', children: [] },
+	{ name: 'Schedule', icon: 'fa fa-calendar-days', to: '/schedule/' }
 ])
 
 onBeforeMount(() => $theme.global.name.value = $store.state.theme.dark ? 'dark' : 'light')
@@ -61,7 +62,7 @@ const resendVerificationEmail = () => {
 
 <template>
 	<v-app dark>
-		<v-app-bar :elevation="scrolled ? 4 : 0" :color="scrolled ? 'default' : 'transparent'" density="compact" v-scroll="e => scrolled = e.target.scrollingElement.scrollTop > 200" app>
+		<v-app-bar :elevation="scrolled ? 4 : 0" :color="scrolled ? 'default' : 'transparent'" density="compact" v-scroll="e => scrolled = e.target.scrollingElement.scrollTop > 50" app>
 			<template v-slot:prepend>
 				<v-app-bar-nav-icon @click.stop="drawer = !drawer" />
 				<v-btn prepend-icon="fa fa-glasses" color="primary" @click="$router.push('/')">BeSpectacled</v-btn>
@@ -124,23 +125,15 @@ const resendVerificationEmail = () => {
 					</template>
 				</v-list-item>
 
-				<v-list-item prepend-icon="fa fa-id-card" @click="$router.push('/profile')">
-					<v-list-item-title>Profile</v-list-item-title>
-				</v-list-item>
+				<v-list-item prepend-icon="fa fa-id-card" title="Profile" @click="$router.push('/profile')" />
 
-				<v-list-item prepend-icon="fa fa-sign-out-alt" @click.prevent="logout">
-					<v-list-item-title>Logout</v-list-item-title>
-				</v-list-item>
+				<v-list-item prepend-icon="fa fa-sign-out-alt" title="Logout" @click.prevent="logout" />
 			</v-list>
 
 			<v-list v-else>
-				<v-list-item prepend-icon="fa fa-sign-in-alt" @click="$router.push('/login')">
-					<v-list-item-title>Login</v-list-item-title>
-				</v-list-item>
+				<v-list-item prepend-icon="fa fa-sign-in-alt" title="Login" @click="$router.push('/login')" />
 
-				<v-list-item prepend-icon="fa fa-user-plus" @click="$router.push('/register')">
-					<v-list-item-title>Register</v-list-item-title>
-				</v-list-item>
+				<v-list-item prepend-icon="fa fa-user-plus" title="Register" @click="$router.push('/register')" />
 			</v-list>
 
 			<v-divider />
@@ -151,7 +144,7 @@ const resendVerificationEmail = () => {
 		</v-navigation-drawer>
 
 		<v-main>
-			<v-banner v-if="currentUser && !currentUser?.verifiedAt" class="align-center" lines="one" icon="$info" color="info" sticky style="top: 3.6em">
+			<v-banner v-if="currentUser && currentUser?.status === 0" class="align-center" lines="one" icon="$info" color="info" sticky>
 				<v-banner-text>
 					You need to verify your email address before you can continue.
 				</v-banner-text>
@@ -169,6 +162,11 @@ const resendVerificationEmail = () => {
 </template>
 
 <style>
+.v-banner {
+	z-index: 2;
+	top: 3.4em !important;
+}
+
 .v-overlay__content {
 	max-width: 70vw !important;
 }
