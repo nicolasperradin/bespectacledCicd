@@ -34,3 +34,5 @@ jobs:
       with:
         push: true
         tags: ${{ secrets.DOCKER_USERNAME }}/bespectacled:latest
+        context: .
+        file: ./docker-compose.yml
