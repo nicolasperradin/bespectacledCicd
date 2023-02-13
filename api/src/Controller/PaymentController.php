@@ -10,18 +10,18 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\Generator\UrlGeneratorInterface;
-use App\Form\PaymentType;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class PaymentController extends AbstractController
 {
 
   #[Route('/payment', name: 'payment')]
-  public function index(Request $request, EntityManagerInterface $entityManager): Response
+  public function index(Request $request, EntityManagerInterface $entityManager, RequestStack $requestStack): Response
   {
 
     if (!$this->getUser()) {
-      return $this->redirectToRoute('front_default');
+      return $this->redirectToRoute('cancel_url');
     }
     $error = null;
     $success = null;
@@ -33,22 +33,16 @@ class PaymentController extends AbstractController
       $this->addFlash('error', $error);
     }
 
-    $form = $this->createForm(PaymentType::class)->handleRequest($request);
+    $request = $requestStack->getCurrentRequest();
+    $content = $request->getContent();
+    $data = json_decode($content, true);
+    $amount = $data['amount'];
 
-    if ($form->isSubmitted() && $form->isValid()) {
-      if ($form->getData()['amount'] < 10 || $form->getData()['amount'] > 10000) {
-        $this->addFlash('error', 'The amount has to be between 10€ and 10 000€');
-        return $this->redirectToRoute('payment');
-      }
-      return $this->redirect($this->generateUrl('checkout', ['amount' => $form->getData()['amount']], UrlGeneratorInterface::ABSOLUTE_URL));
+    if ($amount < 10 || $amount > 10000) {
+      $this->addFlash('error', 'The amount has to be between 10€ and 10 000€');
+      return $this->redirectToRoute('payment');
     }
-    
-    $form = $form->createView();
-
-    return $this->render(
-      'payment/index.html.twig',
-      compact('form')
-    );
+    return $this->redirect($this->generateUrl('checkout', ['amount' => $amount], UrlGeneratorInterface::ABSOLUTE_URL));
   }
 
 
@@ -74,7 +68,7 @@ class PaymentController extends AbstractController
             'product_data' => [
               'name' => 'Add funds to your League Bet account',
             ],
-            'unit_amount' => $amount * 100,
+            'ticket' => 'ticket',
           ],
           'quantity' => 1,
         ]
