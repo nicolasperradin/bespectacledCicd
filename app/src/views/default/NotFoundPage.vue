@@ -1,5 +1,9 @@
+<script setup>
+const parallax = new URL('@/assets/404.png', import.meta.url).href
+</script>
+
 <template>
-	<v-parallax :src="require('@/assets/404.png')">
+	<v-parallax :src="parallax">
 		<div class="d-flex flex-column fill-height justify-center align-center text-white">
 			<h1 class="text-primary text-h1 font-weight-thin mb-4">Uh oh!</h1>
 			<h4 class="text-secondary">This page doesn't exist.</h4>

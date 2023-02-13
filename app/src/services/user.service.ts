@@ -26,20 +26,20 @@ class UserService {
 	}
 
 	getProfile() {
-		return Promise.resolve({ data: JSON.parse(localStorage.getItem('user')) })
+		return Promise.resolve({ data: JSON.parse(localStorage.getItem('user') || '{}') })
 		// return axios.get(API_URL + 'users/me', { headers: headers() })
 	}
 
-	updateProfile(data) {
-		return Promise.resolve({ data: { ...JSON.parse(localStorage.getItem('user')), ...data } }).then(response => localStorage.setItem('user', JSON.stringify(response.data)))
+	updateProfile(data: any) {
+		return Promise.resolve({ data: { ...JSON.parse(localStorage.getItem('user') || '{}'), ...data } }).then(response => localStorage.setItem('user', JSON.stringify(response.data)))
 		// return axios.put(API_URL + 'users/me', data, { headers: headers() })
 	}
 
-	resetPassword(data) {
+	resetPassword(data: any) {
 		return axios.post(API_URL + 'users/reset-password', data, { headers: headers() })
 	}
 
-	confirm(data) {
+	confirm(data: any) {
 		return axios.post(API_URL + 'users/confirm', data, { headers: headers() })
 	}
 }

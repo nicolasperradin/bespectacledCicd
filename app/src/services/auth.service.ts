@@ -5,7 +5,7 @@ const API_URL = 'http://localhost/api'
 const data = { id: 1, username: 'root1', email: 'root1@root.com', roles: ['ROLE_ADMIN'], token: Math.random().toString(36).substring(7) }
 
 class AuthService {
-	login({ email, password }) {
+	login({ email, password }: any) {
 		return Promise.resolve({ data: { ...data, email, password } })
 		// return axios
 		// 	.post(API_URL + '/login', { email, password })
@@ -15,13 +15,13 @@ class AuthService {
 				return response.data
 			})
 	}
-	register({ username, email, password }) {
+	register({ username, email, password }: any) {
 		return axios.post(API_URL + '/users', { username, email, password })
 	}
 	logout() {
 		localStorage.removeItem('user')
 	}
-	forgotPassword({ email }) {
+	forgotPassword({ email }: any) {
 		return axios
 			.post(API_URL + '/forgot-password', { email })
 			.then(response => { return response.data })

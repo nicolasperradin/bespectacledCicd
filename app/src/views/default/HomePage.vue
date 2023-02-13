@@ -1,10 +1,10 @@
 <script setup>
 const slides = [
-	require('@/assets/maestro.jpeg'),
-	require('@/assets/carnival.jpeg'),
-	require('@/assets/concert.jpeg'),
-	require('@/assets/neon-lights.jpeg'),
-	require('@/assets/theatre.jpeg')
+	new URL('@/assets/maestro.jpeg', import.meta.url).href,
+	new URL('@/assets/carnival.jpeg', import.meta.url).href,
+	new URL('@/assets/concert.jpeg', import.meta.url).href,
+	new URL('@/assets/neon-lights.jpeg', import.meta.url).href,
+	new URL('@/assets/theatre.jpeg', import.meta.url).href
 ]
 
 const onIntersect = {

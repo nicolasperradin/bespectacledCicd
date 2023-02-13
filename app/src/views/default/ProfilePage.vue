@@ -1,7 +1,7 @@
 <script setup>
 import { onMounted, reactive, ref, watch } from 'vue'
 
-import UserService from '../services/user.service'
+import UserService from '../../services/user.service'
 
 const message = ref('')
 const inputs = reactive({ id: 0, username: '', email: '', roles: [], token: '' })

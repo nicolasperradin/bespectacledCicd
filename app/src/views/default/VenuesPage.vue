@@ -1,8 +1,10 @@
 <script setup>
 import { ref, onMounted } from 'vue'
 
-import EventService from '../services/event.service'
-import VenueService from '../services/venue.service'
+import EventService from '../../services/event.service'
+import VenueService from '../../services/venue.service'
+
+const parallax = new URL('@/assets/stadium.jpeg', import.meta.url).href
 
 const menus = ref({})
 const events = ref([])
@@ -33,7 +35,7 @@ const onIntersect = {
 </script>
 
 <template>
-	<v-parallax :src="require('@/assets/stadium.jpeg')">
+	<v-parallax :src="parallax">
 		<div class="d-flex flex-column fill-height justify-center align-center">
 			<div class="text-h2 font-weight-thin mb-4">BeSpectacled Venues</div>
 			<div class="text-h4 text-secondary">Meet your favorite artists in our venues</div>

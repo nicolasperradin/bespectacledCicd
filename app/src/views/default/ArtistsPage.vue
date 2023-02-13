@@ -1,5 +1,6 @@
 <script setup>
 import { ref } from 'vue'
+import stadium from '@/assets/stadium.jpeg'
 
 const model = ref(null)
 
@@ -10,7 +11,7 @@ const onIntersect = {
 </script>
 
 <template>
-	<v-parallax :src="require('@/assets/stadium.jpeg')">
+	<v-parallax :src="stadium">
 		<div class="d-flex flex-column fill-height justify-center align-center text-white">
 			<h1 class="text-h4 font-weight-thin mb-4">BeSpectacled</h1>
 			<h4>Book tickets for events, concerts, and more!</h4>

@@ -3,13 +3,14 @@ import { computed, onMounted, reactive, ref } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 
-import EventService from '../services/event.service'
-import ScheduleService from '../services/schedule.service'
+import EventService from '../../services/event.service'
+import ScheduleService from '../../services/schedule.service'
 
 const $store = useStore()
 const $router = useRouter()
 
 const query = $router.currentRoute.value.query
+const parallax = new URL('@/assets/stadium.jpeg', import.meta.url).href
 
 const tab = ref(1)
 const menus = ref([])
@@ -28,17 +29,6 @@ const options = reactive({
 		input: 'YYYY-MM-DD h:mm A',
 	}
 })
-
-const attr = (label = null, visibility = 'hover') => {
-	return {
-		popover: {
-			label,
-			visibility,
-			isInteractive: true,
-			placement: 'auto'
-		}
-	}
-}
 
 const attrs = computed(() => {
 	return [
@@ -91,6 +81,17 @@ onMounted(async () => {
 	})
 })
 
+const attr = (label = null, visibility = 'hover') => {
+	return {
+		popover: {
+			label,
+			visibility,
+			isInteractive: true,
+			placement: 'auto'
+		}
+	}
+}
+
 const randomColor = title => {
 	const colors = ['gray', 'red', 'orange', 'yellow', 'green', 'teal', 'blue', 'indigo', 'purple', 'pink']
 	return colors[title.length % colors.length]
@@ -98,7 +99,7 @@ const randomColor = title => {
 </script>
 
 <template>
-	<v-parallax :src="require('@/assets/stadium.jpeg')">
+	<v-parallax :src="parallax">
 		<div class="d-flex flex-column fill-height justify-center align-center">
 			<div class="text-h2 font-weight-thin mb-4">BeSpectacled Schedule</div>
 			<div class="text-h4 text-secondary">Take a look at our upcoming events</div>
