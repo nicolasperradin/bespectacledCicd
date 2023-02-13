@@ -5,7 +5,8 @@
   "scripts": {
     "start": "vue-cli-service serve",
     "build": "vue-cli-service build",
-    "lint": "vue-cli-service lint"
+    "lint": "vue-cli-service lint",
+    "crud": "npm init @api-platform/client https://demo.api-platform.com src/ -- -g vuetify -r"
   },
   "dependencies": {
     "@fortawesome/fontawesome-svg-core": "^6.1.0",

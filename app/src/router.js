@@ -41,12 +41,11 @@ const router = createRouter({ history: createWebHistory(), routes })
 export default router
 
 router.beforeEach((to, from, next) => {
-	const publicPages = [
+	const guestPages = [
 		'/', '/news', '/artists', '/events', '/venues', '/schedule',
-		'/login', '/register', '/forget-password',
-		'/profile'
+		'/login', '/register', '/forget-password'
 	]
-	const authRequired = !publicPages.includes(to.path)
+	const authRequired = !guestPages.includes(to.path)
 	const loggedIn = localStorage.getItem('user')
 
 	// trying to access a restricted page + not logged in

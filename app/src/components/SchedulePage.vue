@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, reactive, ref, watch } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
 
@@ -9,10 +9,9 @@ import ScheduleService from '../services/schedule.service'
 const $store = useStore()
 const $router = useRouter()
 
-// get $router query
+const query = $router.currentRoute.value.query
 
-
-const tab = ref(0)
+const tab = ref(1)
 const menus = ref([])
 const calendar = ref(null)
 const selectedEvent = ref(null)
@@ -22,20 +21,26 @@ const options = reactive({
 	columns: 1,
 	events: [],
 	range: {
-		start: new Date(),
-		end: new Date().setDate(new Date().getDate() + 7)
+		start: null,
+		end: null
 	},
 	masks: {
 		input: 'YYYY-MM-DD h:mm A',
 	}
 })
 
-// watch selected event
-watch(selectedEvent, (event) => {
-	console.log(event)
-})
+const attr = (label = null, visibility = 'hover') => {
+	return {
+		popover: {
+			label,
+			visibility,
+			isInteractive: true,
+			placement: 'auto'
+		}
+	}
+}
 
-const attributes = computed(() => {
+const attrs = computed(() => {
 	return [
 		{ key: 'today', highlight: true, dates: new Date() },
 		options.range.start && options.range.end && {
@@ -47,27 +52,16 @@ const attributes = computed(() => {
 			},
 			dates: { start: options.range.start, end: options.range.end }
 		},
-		// { key: 'disabled', dates: calendarSchedule.value.map(day => day.times.map(time => day.date + 'T' + time)).flat() },
-		...calendarSchedule.value.map(event => {
+		...calendarSchedule.value.filter(day => day.event.id === (selectedEvent.value?.id || day.event.id)).map(event => {
 		return {
-			...event,
 			dates: event.dates,
 			dot: {
 				color: event.color,
 				class: event.isComplete ? 'disabled' : ''
 			},
-			popover: {
-				label: event.description,
-				labelClass: 'bg-transparent text-primary',
-				labelStyle: {
-					fontSize: '1.5rem',
-					fontWeight: 'bold'
-				},
-				visibility: 'focus',
-				isInteractive: true,
-				placement: 'auto'
-			},
-			customData: event
+			...attr(event.description, 'focus'),
+			customData: event,
+			...event
 		}
 	})]
 })
@@ -77,9 +71,13 @@ onMounted(async () => {
 	const { data: schedule } = await ScheduleService.all()
 
 	options.events = events
+	selectedEvent.value = events.find(e => e.id === Number(query?.event))
+	if (query?.start) options.range.start = new Date(query?.start)
+	if (query?.end) options.range.end = new Date(query?.end)
 
-	calendarSchedule.value = schedule.filter(day => day.event === (selectedEvent.value?.id || day.event)).map(day => {
+	calendarSchedule.value = schedule.map(day => {
 		const event = events.find(e => e.id === day.event)
+
 		if (!menus.value[day.id]) menus.value[day.id] = Array.from(day.times.length).fill(null)
 
 		return {
@@ -114,9 +112,9 @@ const randomColor = title => {
 					<!-- <div v-if="calendar" class="text-overline">{{ calendar.firstPage.title }}</div> -->
 
 					<div class="d-flex justify-space-between align-center mb-2">
-						<v-btn variant="text" color="grey darken-2" icon="fa fa-chevron-left" @click="calendar.move(-1)" />
-						<v-btn variant="outlined" color="grey darken-2" @click="calendar.focus(new Date())">Today</v-btn>
-						<v-btn variant="text" color="grey darken-2" icon="fa fa-chevron-right" @click="calendar.move(1)" />
+						<!-- <v-btn variant="text" color="grey darken-2" icon="fa fa-chevron-left" @click="() => calendar.move(-1)" /> -->
+						<v-btn variant="outlined" color="grey darken-2" @click="() => calendar.focusDate(new Date())">Today</v-btn>
+						<!-- <v-btn variant="text" color="grey darken-2" icon="fa fa-chevron-right" @click="() => calendar.move(1)" /> -->
 					</div>
 
 					<v-combobox
@@ -128,23 +126,40 @@ const randomColor = title => {
 						hide-selected
 					/>
 
-					<v-date-picker v-model="range" mode="dateTime" :masks="masks" is-range>
-						<template v-slot="{ inputValue, inputEvents, isDragging }">
+					<v-date-picker
+						v-model="options.range"
+						mode="date"
+						color="purple"
+						:is-dark="$store.state.theme.dark"
+						:masks="options.masks"
+						is-range
+						:select-attribute="attr()"
+						:drag-attribute="attr()"
+						@drag="options.range = $event"
+					>	
+						<template v-slot:day-popover="{ format }">
+							{{ format(options.range.start, 'MMM D') }}
+							-
+							{{ format(options.range.end, 'MMM D') }}
+						</template>
+
+						<template v-slot="{ inputEvents, isDragging }">
 							<div class="d-flex flex-column flex-wrap">
 								<v-text-field
-									type="datetime"
 									:prepend-inner-icon="isDragging ? 'fa fa-bullseye text-primary' : 'fa fa-calendar'"
 									label="Minimum Date"
-									v-model="inputValue.start"
+									v-model="options.range.start"
 									v-on="inputEvents.start"
+									clearable
+									hide-details
 								/>
 
 								<v-text-field
-									type="datetime"
 									:prepend-inner-icon="isDragging ? 'fa fa-bullseye text-primary' : 'fa fa-calendar'"
 									label="Maximum Date"
-									v-model="inputValue.end"
+									v-model="options.range.end"
 									v-on="inputEvents.end"
+									clearable
 									hide-details
 								/>
 							</div>
@@ -165,21 +180,22 @@ const randomColor = title => {
 				:max-date="options.range.end"
 				is-expanded
 				:is-dark="$store.state.theme.dark"
-				:attributes="attributes"
+				:attributes="attrs"
+				nav-visibility="hover"
 			>
-				<template #day-popover="{ dayTitle, attributes }">
+				<template #day-popover="{ day, format, attributes }">
 					<div class="text-overline text-gray-300 font-semibold text-center">
-						{{ dayTitle }}
+						{{ format(day.date, 'WWWW, MMMM D, YYYY') }}
 					</div>
 
 					<v-tabs v-model="tab" color="primary" stacked show-arrows>
-						<v-tab v-for="attr in attributes" :key="attr.key" :value="attr.key">
+						<v-tab v-for="attr in attributes" :key="attr.key" :value="attr.customData.event.id">
 							<v-avatar start :image="attr.customData.event.src" />
 						</v-tab>
 					</v-tabs>
 
 					<v-window v-model="tab">
-						<v-window-item v-for="attr in attributes" :key="attr.key" :value="attr.key">
+						<v-window-item v-for="attr in attributes" :key="attr.key" :value="attr.customData.event.id">
 							<v-card flat :title="attr.customData.event.title" :subtitle="`Min. ${attr.customData.event.price} per seat`" :append-avatar="attr.customData.event.src">
 								<v-card-text v-if="attr.customData.day.times.length > 0">
 									<div class="text-overline">Starting {{ attr.customData.day.times.length > 1 ? 'Times' : 'Time' }}</div>
@@ -200,7 +216,7 @@ const randomColor = title => {
 
 											<v-card width="max-content">
 												<v-list bg-color="black">
-													<v-list-item :title="time" :subtitle="dayTitle">
+													<v-list-item :title="time" :subtitle="format(day.date, 'WWWW, MMMM D, YYYY')">
 														<template v-slot:append>
 															<v-list-item-action>
 																<v-btn icon="fa fa-times-circle" variant="text" @click="menus[attr.customData.day.id][i] = false" />
@@ -210,8 +226,7 @@ const randomColor = title => {
 												</v-list>
 
 												<v-list>
-													<v-list-item link prepend-icon="fa fa-ticket" title="Buy Tickets" @click="() => $router.push({ name: 'ticketing', query: { event: attr.customData.event.id, time: time } })" />
-													<v-list-item link prepend-icon="fa fa-calendar-days" title="Check Other Events At This Time" @click="() => $router.push({ name: 'schedule', query: { time: time } })" />
+													<v-list-item link prepend-icon="fa fa-ticket" title="Buy Tickets" @click="() => $router.push({ name: 'ticketing', query: { event: attr.customData.event.id, time } })" />
 												</v-list>
 											</v-card>
 										</v-menu>

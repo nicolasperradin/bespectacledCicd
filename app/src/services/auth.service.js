@@ -2,9 +2,7 @@ import axios from 'axios'
 
 const API_URL = 'http://localhost/api'
 
-const data = {
-	id: 1, username: 'root1', email: 'root1@root.com', roles: ['ROLE_ADMIN']
-}
+const data = { id: 1, username: 'root1', email: 'root1@root.com', roles: ['ROLE_ADMIN'], token: Math.random().toString(36).substring(7) }
 
 class AuthService {
 	login({ email, password }) {
@@ -13,6 +11,7 @@ class AuthService {
 		// 	.post(API_URL + '/login', { email, password })
 			.then(response => {
 				if (response.data.token) localStorage.setItem('user', JSON.stringify(response.data))
+				else throw new Error('Missing token.')
 				return response.data
 			})
 	}
