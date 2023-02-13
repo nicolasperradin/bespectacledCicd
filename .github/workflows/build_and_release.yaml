@@ -16,6 +16,19 @@ jobs:
     - name: Check out source code
       uses: actions/checkout@v3
 
+    - uses: actions/setup-node@v3
+      with:
+        node-version: 16
+
+    - name: Install dependencies
+      with: 
+        working-directory: ./app
+      run: 
+          npm run build
+   # - name: Test the application
+    #  run: |
+     #     npm test   
+
     - name: Docker meta
       id: meta
       uses: docker/metadata-action@v4
