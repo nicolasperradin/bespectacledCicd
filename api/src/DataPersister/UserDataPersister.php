@@ -6,27 +6,24 @@ namespace App\DataPersister;
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
 use ApiPlatform\Core\DataPersister\ContextAwareDataPersisterInterface;
-use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Doctrine\Persistence\ManagerRegistry;
+use App\Email\Mailer;
+use App\Security\TokenGenerator;
 
 /**
  *
  */
 class UserDataPersister implements ContextAwareDataPersisterInterface
 {
-    private $_entityManager;
-    private $_passwordEncoder;
-    private $_doctrine;
 
     public function __construct(
-        EntityManagerInterface $entityManager,
-        UserPasswordEncoderInterface $passwordEncoder,
-        ManagerRegistry $doctrine
-    ) {
-        $this->_entityManager = $entityManager;
-        $this->_passwordEncoder = $passwordEncoder;
-        $this->_doctrine = $doctrine;
-    }
+        private EntityManagerInterface $entityManager,
+        private ManagerRegistry $doctrine,
+        private UserPasswordHasherInterface $userPasswordHasher,
+        private TokenGenerator $tokenGenerator,
+        private Mailer $mailer
+    ) {}
 
     /**
      * {@inheritdoc}
@@ -42,24 +39,31 @@ class UserDataPersister implements ContextAwareDataPersisterInterface
     public function persist($data, array $context = [])
     {
         if ($data->getPlainPassword()) {
+
             $data->setPassword(
-                $this->_passwordEncoder->encodePassword(
+                $this->userPasswordHasher->hashPassword(
                     $data,
                     $data->getPlainPassword()
                 )
             );
 
             $data->eraseCredentials();
+            $data->setConfirmationToken(
+                $this->tokenGenerator->getRandomSecureToken()
+            );
+    
+            // Send e-mail here...
+            $this->mailer->sendConfirmationEmail($data);
         }
 
-        $amountOfUsers = $this->_doctrine->getRepository(User::class)->countall();
+        $amountOfUsers = $this->doctrine->getRepository(User::class)->countall();
 
         if($amountOfUsers == 0){
             $data->setRoles(array("ROLE_ADMIN"));
         }
 
-        $this->_entityManager->persist($data);
-        $this->_entityManager->flush();
+        $this->entityManager->persist($data);
+        $this->entityManager->flush();
     }
 
     /**
@@ -67,7 +71,7 @@ class UserDataPersister implements ContextAwareDataPersisterInterface
      */
     public function remove($data, array $context = [])
     {
-        $this->_entityManager->remove($data);
-        $this->_entityManager->flush();
+        $this->entityManager->remove($data);
+        $this->entityManager->flush();
     }
 }
