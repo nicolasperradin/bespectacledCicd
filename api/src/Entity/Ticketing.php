@@ -2,7 +2,7 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Core\Annotation\ApiResource;
 use App\Repository\TicketingRepository;
 use Doctrine\ORM\Mapping as ORM;
 use App\Enum\TicketingStatusEnum;
@@ -11,31 +11,15 @@ use Symfony\Component\Validator\Constraints as Assert;
 use Doctrine\DBAL\Types\Types;
 
 #[ORM\Entity(repositoryClass: TicketingRepository::class)]
+#[ORM\Table(name: "`ticketing`")]
 #[ApiResource(
     collectionOperations: [
-        'get' => [
-            'normalization_context' => [
-                'groups' => ['ticketing:read']
-            ]
+        "post" => [
+            "path" => "/users/confirm2",
         ],
-        'post' => [
-            'denormalization_context' => [
-                'groups' => ['ticketing:write']
-            ]
-        ]
+        "get" => []
     ],
-    itemOperations: [
-        'get' => [
-            'normalization_context' => [
-                'groups' => ['ticketing:read']
-            ]
-        ],
-        'put' => [
-            'denormalization_context' => [
-                'groups' => ['ticketing:write']
-            ]
-        ]
-    ]
+    itemOperations : []
 )]
 class Ticketing
 {

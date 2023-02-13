@@ -10,7 +10,7 @@ use Doctrine\Migrations\AbstractMigration;
 /**
  * Auto-generated Migration: Please modify to your needs!
  */
-final class Version20230212133156 extends AbstractMigration
+final class Version20230212133157 extends AbstractMigration
 {
     public function getDescription(): string
     {
@@ -29,7 +29,6 @@ final class Version20230212133156 extends AbstractMigration
     public function down(Schema $schema): void
     {
         // this down() migration is auto-generated, please modify it to your needs
-        $this->addSql('CREATE SCHEMA public');
         $this->addSql('DROP SEQUENCE refresh_tokens_id_seq CASCADE');
         $this->addSql('DROP TABLE refresh_tokens');
         //$this->addSql('ALTER TABLE "user" RENAME COLUMN validated_account_artist TO validated_account');

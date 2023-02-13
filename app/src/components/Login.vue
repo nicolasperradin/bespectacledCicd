@@ -82,7 +82,7 @@ export default {
     },
     handleLogin(user) {
       this.loading = true;
-      this.$vg.dispatch("auth/login", user).then(
+      this.$store.dispatch("auth/login", user).then(
         () => {
           this.$router.push("/dashboard");
         },

@@ -71,5 +71,10 @@ security:
               roles: IS_AUTHENTICATED_FULLY,
               methods: [GET, PUT, PATCH, DELETE],
           }
+        - {
+              path: ^/api/events,
+              roles: IS_AUTHENTICATED_FULLY,
+              methods: [GET, PUT, PATCH, DELETE],
+          }  
         - { path: ^/refresh-token, roles: IS_AUTHENTICATED_ANONYMOUSLY }
         - { path: ^/api/login, roles: PUBLIC_ACCESS }
