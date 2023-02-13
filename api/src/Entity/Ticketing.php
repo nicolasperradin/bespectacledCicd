@@ -14,12 +14,29 @@ use Doctrine\DBAL\Types\Types;
 #[ORM\Table(name: "`ticketing`")]
 #[ApiResource(
     collectionOperations: [
-        "post" => [
-            "path" => "/users/confirm2",
+        'get' => [
+            'normalization_context' => [
+                'groups' => ['ticketing:read']
+            ]
         ],
-        "get" => []
+        'post' => [
+            'denormalization_context' => [
+                'groups' => ['ticketing:write']
+            ]
+        ]
     ],
-    itemOperations : []
+    itemOperations: [
+        'get' => [
+            'normalization_context' => [
+                'groups' => ['ticketing:read']
+            ]
+        ],
+        'put' => [
+            'denormalization_context' => [
+                'groups' => ['ticketing:write']
+            ]
+        ]
+    ]
 )]
 class Ticketing
 {
