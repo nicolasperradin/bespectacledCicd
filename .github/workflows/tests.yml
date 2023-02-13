@@ -9,7 +9,7 @@ jobs:
     strategy:
       fail-fast: true
       matrix:
-        php-versions: ['8.1']
+        php-versions: ["8.1"]
     steps:
       # —— Setup Github actions —————————————————————————————————————————————
       # https://github.com/actions/checkout (official)
@@ -51,10 +51,10 @@ jobs:
         run: vendor/bin/simple-phpunit tests
       # —— Code coverage ————————————————————————————————————————————————————
       #- name: Upload coverage to Codecov
-       # uses: codecov/codecov-action@v1
-       # with:
-         # token: ${{ secrets.CODECOV_TOKEN }}
-         # file: ./api/coverage.xml
-         # flags: unittests
-         # name: codecov-umbrella
-          #fail_ci_if_error: true
+      # uses: codecov/codecov-action@v1
+      # with:
+      # token: ${{ secrets.CODECOV_TOKEN }}
+      # file: ./api/coverage.xml
+      # flags: unittests
+      # name: codecov-umbrella
+      #fail_ci_if_error: true
