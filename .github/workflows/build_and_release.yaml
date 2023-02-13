@@ -9,7 +9,7 @@ on: [push]
 
 jobs:
   push_to_registry:
-    name: Push Docker image to Docker Hub
+    name: Push Docker image build with docker-compose to Docker Hub
     runs-on: ubuntu-latest
     steps:
       # Check out source code.
@@ -28,10 +28,13 @@ jobs:
         username: ${{ secrets.DOCKER_USERNAME }}
         password: ${{ secrets.DOCKERHUB_PASSWORD }}
 
-    # Build and push container image.
+    # Build and push container build with docker 
     - name: Build and push
       uses: docker/build-push-action@v4
       with:
         push: true
         tags: ${{ secrets.DOCKER_USERNAME }}/bespectacled:latest
         context: .
+        file: ./Dockerfile
+        platforms: linux/amd64,linux/arm64,linux/arm/v7,linux/arm/v6
+        
