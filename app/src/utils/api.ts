@@ -10,6 +10,8 @@ export default async function (id: string, options: any = {}) {
     Object.assign(options, { headers: new Headers() });
   }
 
+  // const user = JSON.parse(localStorage.getItem("user") || ';
+
   if (options.headers.get("Accept") === null) {
     options.headers.set("Accept", MIME_TYPE);
   }
@@ -33,7 +35,7 @@ export default async function (id: string, options: any = {}) {
     // credentials: 'include', // when credentials needed
   });
 
-  const response = await fetch(new URL(id, ENTRYPOINT), options);
+  const response = await fetch(new URL(ENTRYPOINT + '/' + id.replace('/api/', '')), options);
 
   if (!response.ok) {
     const data = await response.json();

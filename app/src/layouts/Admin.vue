@@ -1,40 +1,45 @@
 <script setup>
 import { computed, onBeforeMount, onMounted, ref } from 'vue'
-import { useStore } from 'vuex'
 import { useTheme } from 'vuetify'
 import { useRouter } from 'vue-router'
+import { useAuthStore, useThemeStore } from '@/store'
+import { useEventListStore } from '@/store/event/list'
 
 import UserService from '@/services/user.service'
 import EventService from '@/services/event.service'
 import VenueService from '@/services/venue.service'
 
-const $store = useStore()
 const $theme = useTheme()
 const $router = useRouter()
-const user = computed(() => $store.state.auth.user)
+const $store = useAuthStore()
+const $themeStore = useThemeStore()
+const $eventListStore = useEventListStore()
 
 const search = ref('')
 const drawer = ref(false)
-// const scrolled = ref(false)
+const user = computed(() => $store.user)
 
 const categories = ref([
-	{ name: 'Artists', icon: 'fa fa-user-tie', to: '/artists/', key: 'username', children: [] },
+	{ name: 'Users', icon: 'fa fa-user-tie', to: '/users/', key: 'username', children: [] },
 	{ name: 'Events', icon: 'fa fa-star', to: '/events/', key: 'title', children: [] },
-	{ name: 'Venues', icon: 'fa fa-location-dot', to: '/venues/', key: 'name', children: [] },
-	{ name: 'Schedule', icon: 'fa fa-calendar-days', to: '/schedule/' }
+	{ name: 'Venues', icon: 'fa fa-location-dot', to: '/rooms/', key: 'name', children: [] },
+	{ name: 'Schedules', icon: 'fa fa-calendar-days', to: '/schedule/' }
 ])
 
-onBeforeMount(() => $theme.global.name.value = $store.state.theme.dark ? 'dark' : 'light')
+// onBeforeMount(() => $theme.global.name.value = $store.state.theme.dark ? 'dark' : 'light')
+onBeforeMount(() => $theme.global.name.value = $themeStore.dark ? 'dark' : 'light')
 
 onMounted(async () => {
-	const { data: artists } = await UserService.artists()
-	categories.value.find(c => c.name === 'Artists').children = artists
+	const { data: users } = await UserService.all()
+	categories.value.find(c => c.name === 'Artists').children = users
 
+	// const { data: events } = await $eventListStore.getItems()
 	const { data: events } = await EventService.all()
 	categories.value.find(c => c.name === 'Events').children = events
 
 	const { data: venues } = await VenueService.all()
 	categories.value.find(c => c.name === 'Venues').children = venues
+	console.log(events)
 })
 
 const filteredCategories = computed(() => {
@@ -44,14 +49,12 @@ const filteredCategories = computed(() => {
 })
 
 const toggle = () => {
-	$store.commit('theme/toggle')
-	$theme.global.name.value = $store.state.theme.dark ? 'dark' : 'light'
+	$themeStore.toggle()
+	// $theme.global.name.value = $store.state.theme.dark ? 'dark' : 'light'
+	$theme.global.name.value = $themeStore.dark ? 'dark' : 'light'
 }
 
-const logout = () => {
-	$store.dispatch('auth/logout')
-	$router.push('/login')
-}
+const logout = () => $store.logout()
 
 const resendVerificationEmail = () => {
 	// TODO $store.dispatch('auth/resendVerificationEmail')
@@ -136,7 +139,11 @@ const resendVerificationEmail = () => {
 			<v-divider />
 
 			<v-list density="compact" nav>
-				<v-list-item v-for="{ name, icon, to } in categories" :key="name" :prepend-icon="icon" :title="`Manage ${name}`" @click="$router.push('/admin' + to)" />
+				<v-list-item v-for="{ name, icon, to } in categories" :key="name" :prepend-icon="icon" append-icon="fa fa-list" :title="`Manage ${name}`" @click="$router.push('/admin' + to)" />
+			</v-list>
+
+			<v-list density="compact" nav>
+				<v-list-item v-for="{ name, icon, to } in categories" :key="name" :prepend-icon="icon" append-icon="fa fa-plus-circle" :title="`Create ${name.slice(0, -1)}`" @click="$router.push('/admin' + to + 'create')" />
 			</v-list>
 		</v-navigation-drawer>
 
@@ -159,6 +166,10 @@ const resendVerificationEmail = () => {
 </template>
 
 <style>
+.v-toolbar {
+	transition: all .2s ease;
+}
+
 .v-banner {
 	z-index: 2;
 	top: 3.4em !important;

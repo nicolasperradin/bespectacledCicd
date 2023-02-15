@@ -1,6 +1,6 @@
 // import axios from 'axios'
 
-// const API_URL = 'http://localhost/api/'
+// const API_URL = import.meta.env.VITE_API_URL
 
 const data = [
 	{ id: 1, name: 'Minskoff Theatre', type: 'broadway', seats: 1710, price: 10000, src: 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/08/Minskoff_Theatre_NYC_2007.jpg/375px-Minskoff_Theatre_NYC_2007.jpg' },

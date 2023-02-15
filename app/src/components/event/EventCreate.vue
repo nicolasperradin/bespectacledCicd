@@ -1,0 +1,43 @@
+<template>
+  <Toolbar :breadcrumb="breadcrumb" :is-loading="isLoading" />
+
+  <v-container fluid>
+    <v-alert v-if="error" type="error" class="mb-4" closable>{{ error }}</v-alert>
+
+    <Form :errors="violations" @submit="create" />
+  </v-container>
+
+  <Loading :visible="isLoading" />
+</template>
+
+<script setup lang="ts">
+import { onBeforeUnmount } from "vue";
+import { useRouter } from "vue-router";
+import { storeToRefs } from "pinia";
+import Toolbar from "@/components/common/Toolbar.vue";
+import Loading from "@/components/common/Loading.vue";
+import Form from "@/components/event/EventForm.vue";
+import { useEventCreateStore } from "@/store/event/create";
+import { useBreadcrumb } from "@/composables/breadcrumb";
+import type { Event } from "@/types/event";
+
+const router = useRouter();
+const breadcrumb = useBreadcrumb();
+
+const eventCreateStore = useEventCreateStore();
+const { created, isLoading, violations, error } = storeToRefs(eventCreateStore);
+
+async function create(item: Event) {
+  await eventCreateStore.create(item);
+
+  if (!created?.value) {
+    return;
+  }
+
+  router.push({ name: "EventUpdate", params: { id: created?.value?.["@id"] } });
+}
+
+onBeforeUnmount(() => {
+  eventCreateStore.$reset();
+});
+</script>

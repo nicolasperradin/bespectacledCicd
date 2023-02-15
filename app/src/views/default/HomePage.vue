@@ -17,8 +17,8 @@ const onIntersect = {
 	<v-carousel color="secondary" cycle hide-delimiter-background progress="primary" show-arrows="hover">
 		<v-carousel-item v-for="(slide, i) in slides" :key="i" :src="slide">
 			<v-sheet color="transparent" class="d-flex flex-column fill-height justify-center align-center text-white">
-				<div :class="[`text-${i === 3 ? 'black' : 'white'}-50`, 'text-h1 font-weight-thin mb-4']">BeSpectacled</div>
-				<div class="text-h4 text-secondary">Book tickets for events, concerts, and more!</div>
+				<div :class="[`text-${i === 5 ? 'black' : 'white'}-50`, 'blend text-h1 font-weight-thin mb-4']">BeSpectacled</div>
+				<div class="blend text-h4">Book tickets for events, concerts, and more!</div>
 	
 				<v-btn color="primary"
 					prepend-icon="fa fa-fade fa-computer-mouse"

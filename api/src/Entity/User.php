@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\UserRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use ApiPlatform\Core\Annotation\ApiResource;
 use Symfony\Component\Serializer\Annotation\Groups;
@@ -60,7 +62,6 @@ use Symfony\Component\Validator\Constraints as Assert;
         ]
     ]
 )]
-
 #[ORM\HasLifecycleCallbacks]
 #[UniqueEntity("email")]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
@@ -93,7 +94,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private $roles = [];
 
     #[ORM\Column(type: "string")]
-    #[Assert\NotBlank()]
+    #[Assert\NotBlank]
     #[Assert\Regex(
         pattern: "/(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{7,}/",
         message: "Password must be seven characters long and contain at least one digit, one upper case letter and one lower case letter"
@@ -125,7 +126,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: "datetime", nullable: true)]
     private $updatedAt;
 
-
     #[ORM\Column(name: "password_change_date", type: "integer", nullable: true)]
     private $passwordChangeDate;
 
@@ -149,6 +149,86 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         message: "passwords does not match"
     )]
     private $newRetypedPassword;
+
+    #[ORM\OneToMany(mappedBy: 'client', targetEntity: RoomReservation::class)]
+    #[Groups("user:get")]
+    private Collection $roomReservations;
+
+    #[ORM\OneToMany(mappedBy: 'buyer', targetEntity: Ticketing::class)]
+    #[Groups("user:get")]
+    private Collection $ticketings;
+
+    #[ORM\OneToMany(mappedBy: 'buyer', targetEntity: PaymentTransaction::class)]
+    private Collection $paymentTransactions;
+
+    #[ORM\Column(type: "boolean", options: ["default" => "0"])]
+    private $validatedAccountArtist = false;
+
+    #[Groups(["user:get"])]
+    #[ORM\Column(type: "datetime", nullable: true)]
+    private $deletedAt;
+
+    #[ORM\ManyToMany(targetEntity: Event::class, mappedBy: 'artists')]
+    private Collection $events;
+
+    public function __construct()
+    {
+        $this->roomReservations = new ArrayCollection();
+        $this->ticketings = new ArrayCollection();
+        $this->paymentTransactions = new ArrayCollection();
+        $this->events = new ArrayCollection();
+    }
+
+    public function isValidatedAccountArtist(): ?bool
+    {
+        return $this->validatedAccountArtist;
+    }
+
+    public function setValidatedAccountArtist(bool $validatedAccountArtist): self
+    {
+        $this->validatedAccountArtist = $validatedAccountArtist;
+
+        return $this;
+    }
+
+    public function getDeletedAt(): ?\DateTimeInterface
+    {
+        return $this->deletedAt;
+    }
+
+    public function setDeletedAt(\DateTimeInterface $deletedAt): self
+    {
+        $this->deletedAt = $deletedAt;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Event>
+     */
+    public function getEvents(): Collection
+    {
+        return $this->events;
+    }
+
+    public function addEvent(Event $event): self
+    {
+        if (!$this->events->contains($event)) {
+            $this->events->add($event);
+            $event->addArtist($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEvent(Event $event): self
+    {
+        if ($this->events->removeElement($event)) {
+            $event->removeArtist($this);
+        }
+
+        return $this;
+    }
 
 
     public function getId(): ?int
@@ -349,6 +429,96 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setOldPassword($oldPassword)
     {
         $this->oldPassword = $oldPassword;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, RoomReservation>
+     */
+    public function getRoomReservations(): Collection
+    {
+        return $this->roomReservations;
+    }
+
+    public function addRoomReservation(RoomReservation $roomReservation): self
+    {
+        if (!$this->roomReservations->contains($roomReservation)) {
+            $this->roomReservations->add($roomReservation);
+            $roomReservation->setClient($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRoomReservation(RoomReservation $roomReservation): self
+    {
+        if ($this->roomReservations->removeElement($roomReservation)) {
+            // set the owning side to null (unless already changed)
+            if ($roomReservation->getClient() === $this) {
+                $roomReservation->setClient(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Ticketing>
+     */
+    public function getTicketings(): Collection
+    {
+        return $this->ticketings;
+    }
+
+    public function addTicketing(Ticketing $ticketing): self
+    {
+        if (!$this->ticketings->contains($ticketing)) {
+            $this->ticketings->add($ticketing);
+            $ticketing->setBuyer($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTicketing(Ticketing $ticketing): self
+    {
+        if ($this->ticketings->removeElement($ticketing)) {
+            // set the owning side to null (unless already changed)
+            if ($ticketing->getBuyer() === $this) {
+                $ticketing->setBuyer(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, PaymentTransaction>
+     */
+    public function getPaymentTransactions(): Collection
+    {
+        return $this->paymentTransactions;
+    }
+
+    public function addPaymentTransaction(PaymentTransaction $paymentTransaction): self
+    {
+        if (!$this->paymentTransactions->contains($paymentTransaction)) {
+            $this->paymentTransactions->add($paymentTransaction);
+            $paymentTransaction->setBuyer($this);
+        }
+
+        return $this;
+    }
+
+    public function removePaymentTransaction(PaymentTransaction $paymentTransaction): self
+    {
+        if ($this->paymentTransactions->removeElement($paymentTransaction)) {
+            // set the owning side to null (unless already changed)
+            if ($paymentTransaction->getBuyer() === $this) {
+                $paymentTransaction->setBuyer(null);
+            }
+        }
 
         return $this;
     }

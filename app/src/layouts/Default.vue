@@ -1,30 +1,32 @@
 <script setup>
 import { computed, onBeforeMount, onMounted, ref } from 'vue'
-import { useStore } from 'vuex'
 import { useTheme } from 'vuetify'
 import { useRouter } from 'vue-router'
+import { useAuthStore, useThemeStore } from '@/store'
 
 import UserService from '@/services/user.service'
 import EventService from '@/services/event.service'
 import VenueService from '@/services/venue.service'
 
-const $store = useStore()
 const $theme = useTheme()
 const $router = useRouter()
-const user = computed(() => $store.state.auth.user)
+const $store = useAuthStore()
+const $themeStore = useThemeStore()
 
 const search = ref('')
 const drawer = ref(false)
 const scrolled = ref(false)
+const user = ref($store.user)
 
 const categories = ref([
-	{ name: 'Artists', icon: 'fa fa-user-tie', to: '/artists/', key: 'username', children: [] },
-	{ name: 'Events', icon: 'fa fa-star', to: '/events/', key: 'title', children: [] },
-	{ name: 'Venues', icon: 'fa fa-location-dot', to: '/venues/', key: 'name', children: [] },
-	{ name: 'Schedule', icon: 'fa fa-calendar-days', to: '/schedule/' }
+	{ name: 'Artists', icon: 'fa fa-user-tie text-blue-darken-4', to: '/artists/', key: 'username', children: [] },
+	{ name: 'Events', icon: 'fa fa-star text-warning', to: '/events/', key: 'title', children: [] },
+	{ name: 'Venues', icon: 'fa fa-location-dot text-success', to: '/rooms/', key: 'name', children: [] },
+	{ name: 'Schedule', icon: 'fa fa-calendar-days text-danger', to: '/schedule/' }
 ])
 
-onBeforeMount(() => $theme.global.name.value = $store.state.theme.dark ? 'dark' : 'light')
+// onBeforeMount(() => $theme.global.name.value = $store.state.theme.dark ? 'dark' : 'light')
+onBeforeMount(() => $theme.global.name.value = $themeStore.dark ? 'dark' : 'light')
 
 onMounted(async () => {
 	const { data: artists } = await UserService.artists()
@@ -44,14 +46,12 @@ const filteredCategories = computed(() => {
 })
 
 const toggle = () => {
-	$store.commit('theme/toggle')
-	$theme.global.name.value = $store.state.theme.dark ? 'dark' : 'light'
+	$themeStore.toggle()
+	// $theme.global.name.value = $store.state.theme.dark ? 'dark' : 'light'
+	$theme.global.name.value = $themeStore.dark ? 'dark' : 'light'
 }
 
-const logout = () => {
-	$store.dispatch('auth/logout')
-	$router.push('/login')
-}
+const logout = () => $store.logout()
 
 const resendVerificationEmail = () => {
 	// TODO $store.dispatch('auth/resendVerificationEmail')
@@ -106,32 +106,30 @@ const resendVerificationEmail = () => {
 				</v-dialog>
 			</template>
 
-			<v-spacer></v-spacer>
+			<v-spacer />
 
-			<v-btn v-if="user" prepend-icon="fa fa-id-card" variant="outlined" @click="$router.push('/profile')">Profile</v-btn>
-			<v-btn v-else prepend-icon="fa fa-right-to-bracket" @click="$router.push('/login')">Login</v-btn>
+			<v-btn v-if="user?.token" prepend-icon="fa fa-id-card" color="primary" variant="outlined" @click="$router.push('/profile')">Profile</v-btn>
+			<v-btn v-else prepend-icon="fa fa-right-to-bracket" color="primary" @click="$router.push('/login')">Login</v-btn>
 			<v-btn :icon="$theme.global.current.value.dark ? 'fa fa-sun' : 'fa fa-moon'" @click="toggle" />
 		</v-app-bar>
 
 		<v-navigation-drawer v-model="drawer" expand-on-hover rail>
 			<v-list v-if="user">
-				<v-list-item prepend-avatar="https://cdn.vuetifyjs.com/images/john.jpg"
-					:title="user?.username || 'John Doe'"
-					:subtitle="user?.email || 'john@doe.com'"
-				>
+				<v-list-item prepend-icon="fa fa-user-circle text-black" :title="user?.username" :subtitle="user?.email">
 					<template v-slot:append>
 						<v-btn variant="text" icon="fa fa-pen" @click="$router.push('/profile')" />
 					</template>
+
+					<v-progress-linear v-if="!user?.username" color="primary" rounded indeterminate />
 				</v-list-item>
 
-				<v-list-item prepend-icon="fa fa-id-card" title="Profile" @click="$router.push('/profile')" />
-				<v-list-item v-if="user.roles.includes('ROLE_ADMIN')" prepend-icon="fa fa-gauge" title="Admin Panel" @click="$router.push('/admin')" />
-				<v-list-item prepend-icon="fa fa-sign-out-alt" title="Logout" @click.prevent="logout" />
+				<v-list-item prepend-icon="fa fa-id-card text-primary" title="Profile" @click="$router.push('/profile')" />
+				<v-list-item v-if="user.roles?.includes('ROLE_ADMIN')" prepend-icon="fa fa-gauge" title="Admin Panel" @click="$router.push('/admin')" />
+				<v-list-item prepend-icon="fa fa-sign-out-alt text-grey" title="Logout" @click.prevent="logout" />
 			</v-list>
 
 			<v-list v-else>
-				<v-list-item prepend-icon="fa fa-sign-in-alt" title="Login" @click="$router.push('/login')" />
-				<v-list-item prepend-icon="fa fa-user-plus" title="Register" @click="$router.push('/register')" />
+				<v-list-item prepend-icon="fa fa-sign-in-alt text-grey" title="Login" @click="$router.push('/login')" />
 			</v-list>
 
 			<v-divider />
@@ -153,7 +151,11 @@ const resendVerificationEmail = () => {
 			</v-banner>
 
 			<v-container>
-				<router-view />
+				<router-view v-slot="{ Component }">
+					<keep-alive>
+						<component :is="Component" :key="$route.fullPath"></component>
+					</keep-alive>
+				</router-view>
 			</v-container>
 		</v-main>
 	</v-app>
@@ -163,6 +165,15 @@ const resendVerificationEmail = () => {
 .v-banner {
 	z-index: 2;
 	top: 3.4em !important;
+}
+
+.v-toolbar {
+	transition: all .2s ease;
+}
+
+.v-navigation-drawer .v-list-item:not(:hover) .v-icon {
+	transition: opacity .4s ease;
+	opacity: 1;
 }
 
 .v-overlay__content {

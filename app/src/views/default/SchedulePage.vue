@@ -2,12 +2,14 @@
 import { computed, onMounted, reactive, ref } from 'vue'
 import { useStore } from 'vuex'
 import { useRouter } from 'vue-router'
+import { useAuthStore, useThemeStore } from '@/store'
 
 import EventService from '../../services/event.service'
 import ScheduleService from '../../services/schedule.service'
 
 const $store = useStore()
 const $router = useRouter()
+const $themeStore = useThemeStore()
 
 const query = $router.currentRoute.value.query
 const parallax = new URL('@/assets/stadium.jpeg', import.meta.url).href
@@ -131,7 +133,7 @@ const randomColor = title => {
 						v-model="options.range"
 						mode="date"
 						color="purple"
-						:is-dark="$store.state.theme.dark"
+						:is-dark="$themeStore.dark"
 						:masks="options.masks"
 						is-range
 						:select-attribute="attr()"
@@ -180,7 +182,7 @@ const randomColor = title => {
 				:min-date="options.range.start"
 				:max-date="options.range.end"
 				is-expanded
-				:is-dark="$store.state.theme.dark"
+				:is-dark="$themeStore.dark"
 				:attributes="attrs"
 				nav-visibility="hover"
 			>

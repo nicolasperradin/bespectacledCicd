@@ -1,6 +1,6 @@
-// import axios from 'axios'
+import axios from 'axios'
 
-// const API_URL = 'http://localhost/api/'
+const baseUrl = import.meta.env.VITE_API_URL
 
 const data = [
 	{ id: 1, venue: 1, title: 'The Lion King', type: 'broadway', price: 162.84, src: 'https://www.nyc.com/images/r/75803/poster.jpg' },
@@ -17,7 +17,7 @@ const data = [
 class EventService {
 	all() {
 		return Promise.resolve({ data })
-		// return axios.get(API_URL + 'events')
+		// return axios.get(baseUrl + '/events')
 	}
 }
 

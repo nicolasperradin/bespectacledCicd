@@ -1,6 +1,6 @@
 // import axios from 'axios'
 
-// const API_URL = 'http://localhost/api/'
+// const API_URL = import.meta.env.VITE_API_URL
 
 const data = [
 	{ id: 1, event: 1, date: '2023-02-10', times: ['20:00'] },

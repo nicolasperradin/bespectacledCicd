@@ -1,68 +1,58 @@
-<script setup>
+<script setup lang="ts">
 import { computed, onBeforeMount, reactive, ref, watch } from 'vue'
-import { useStore } from 'vuex'
+import { useVuelidate } from '@vuelidate/core'
+import { email, minLength, maxLength, required, sameAs } from '@vuelidate/validators'
+
+import * as yup from 'yup'
 import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/store';
 
-const $store = useStore()
 const $router = useRouter()
+const $store = useAuthStore()
 
-const step = ref(1)
-const form = ref(null)
+const parallax = new URL('@/assets/carnival.jpeg', import.meta.url).href
+
 const valid = ref(true)
 const message = ref('')
 const loading = ref(false)
-const successful = ref(false)
-const loggedIn = computed(() => $store.state.auth.status.loggedIn)
+const user = ref($store.user)
+const showPassword = ref(false)
 const inputs = reactive({ username: '', email: '', password: '', confirmPassword: '' })
-// TODO errors variable is useless
+const form = ref<null | typeof import('vuetify/components')['VForm']>(null)
+const toast = computed(() => { return { state: !!message.value, color: 'success' } })
+
 const errors = reactive({ username: '', email: '', password: '', confirmPassword: '' })
-const currentTitle = computed(() => { return ['Basic info', 'Create a password'][step.value - 1] || 'Account created' })
 
 const rules = {
-	username: [
-		v => !!v || 'Username is required',
-		v => (v && v.length >= 3) || 'Username must be at least 3 characters',
-		v => (v && v.length <= 20) || 'Username must be less than 20 characters'
-	], email: [
-		v => !!v || 'Email is required',
-		v => /.+@.+\..+/.test(v) || 'Email must be valid',
-		v => (v && v.length <= 50) || 'Email must be less than 50 characters'
-	], password: [
-		v => !!v || 'Password is required',
-		v => (v && v.length >= 6) || 'Password must be at least 6 characters',
-		v => (v && v.length <= 40) || 'Password must be less than 40 characters'
-	], confirmPassword: [
-		v => !!v || 'Password confirmation is required',
-		v => (v && v.length >= 6) || 'Password confirmation must be at least 6 characters',
-		v => (v && v.length <= 40) || 'Password confirmation must be less than 40 characters',
-		v => (v && v === inputs.password) || 'Password confirmation must match password'
-	]
+	username: { required, minLength: minLength(3), maxLength: maxLength(20) },
+	email: { required, email, maxLength: maxLength(50) },
+	password: { required, minLength: minLength(6), maxLength: maxLength(40) },
+	confirmPassword: { required, sameAsRawValue: sameAs(inputs.password) }
 }
 
-onBeforeMount(() => loggedIn.value && $router.push('/profile'))
+const v$ = useVuelidate(rules, inputs)
 
-watch(valid, val => val === null && (valid.value = true))
-watch(errors, val => console.log('errors', val))
+// TODO handle this in the router.onBeforeEach hook instead
+onBeforeMount(() => user.value && $router.push('/profile'))
+
 watch(message, val => val && setTimeout(() => message.value = '', 3000))
+watch(valid, valid => console.log('valid', valid))
 
-const handleRegister = async user => {
-	message.value = ''
-	successful.value = false
+const handleRegister = async (user: any) => {
+	if (!valid.value) return
+
 	loading.value = true
 
 	try {
-		const { valid } = await form.value.validate()
-		if (!valid) throw new Error('You must fill out all fields correctly.')
-		await $store.dispatch('auth/register', user)
-		step.value = 3
-		message.value = 'You have registered. You can now login.'
-		successful.value = true
-	} catch (err) {
+		const data = await $store.register(user)
+		toast.value.color = 'success'
+		message.value = 'Register successful!'
+		$router.push('/login')
+		$router.go(0)
+		// await $store.dispatch('auth/login', user)
+	} catch (err: any) {
+		toast.value.color = 'danger'
 		message.value = err?.response?.data?.message || err.message || err.toString()
-		successful.value = false
-		// step.value = 1
-
-		if (err?.response?.data?.violations) err.response.data.violations.forEach(v => errors[v.propertyPath] = v.message)
 	} finally {
 		loading.value = false
 	}
@@ -70,81 +60,94 @@ const handleRegister = async user => {
 </script>
 
 <template>
-	<!-- TODO improve alert -->
-	<v-alert v-show="message" density="compact" :type="successful ? 'success' : 'error'" class="position-absolute me-4" border @click="message = ''">
-		{{ message }}
-	</v-alert>
+	<v-parallax :src="parallax">
+		<div class="d-flex flex-column fill-height justify-center align-center">
+			<div class="text-white-50 text-h2 font-weight-thin mb-4">BeSpectacled Login</div>
+			<div class="text-h4 text-primary">Register</div>
+		</div>
+	</v-parallax>
 
-	<!-- color="deep-purple-accent-4" -->
-	<!-- <v-snackbar :timeout="3000" elevation="24" :color="successful ? 'success' : 'error'">
-		<template v-slot:activator="{ props }">
-			<v-btn color="deep-purple-accent-4" class="ma-2" v-bind="props">open</v-btn>
-		</template>
+	<v-snackbar v-model="toast.state" :timeout="2000" :color="toast.color" elevation="24">{{ message }}</v-snackbar>
 
-		{{ message }}
-    </v-snackbar> -->
+	<v-card :disabled="loading || !inputs" :loading="loading || !inputs">
+		<v-form ref="form" v-model="valid" @submit.prevent="handleRegister(inputs)">
+			<v-card-text>
+				<v-row>
+					<v-col cols="12" sm="6">
+						<v-text-field
+							v-model="inputs.username"
+							:error-messages="v$.username?.$errors.map((e: any) => e.$message)"
+							:counter="20"
+							label="Username*"
+							required
+							@input="v$.username.$touch"
+							@blur="v$.username.$touch"
+						/>
+					</v-col>
 
-	<div class="text-h3 text-center my-10">Register</div>
+					<v-col cols="12" sm="6">
+						<v-text-field
+							v-model="inputs.email"
+							:error-messages="v$.email?.$errors.map((e: any) => e.$message)"
+							:counter="50"
+							label="Email*"
+							type="email"
+							required
+							@input="v$.email.$touch"
+							@blur="v$.email.$touch"
+						/>
+					</v-col>
 
-	<v-form ref="form" v-model="valid" @submit.prevent="handleRegister(inputs)">
-		<v-card :loading="loading" class="mx-auto" max-width="500">
-			<v-card-title class="d-flex text-h6 font-weight-regular align-center justify-space-between">
-				<span>{{ currentTitle }}</span>
+					<v-col cols="12" sm="6">
+						<v-text-field
+							v-model="inputs.password"
+							:error-messages="v$.password?.$errors.map((e: any) => e.$message)"
+							:counter="40"
+							label="Password*"
+							:type="showPassword ? 'text' : 'password'"
+							required
+							@input="v$.password.$touch"
+							@blur="v$.password.$touch"
+							:append-inner-icon="inputs.password && (showPassword ? 'fa fa-eye-slash' : 'fa fa-eye')"
+							@click:append-inner="showPassword = !showPassword"
+						/>
+					</v-col>
 
-				<v-item-group v-model="step" class="text-center" mandatory>
-					<v-item v-for="n in 3" :key="`btn-${n}`" v-slot="{ isSelected }" :value="n">
-						<v-btn density="comfortable" :variant="isSelected ? 'outlined' : 'text'" :icon="`fa-${n}`" />
-					</v-item>
-				</v-item-group>
-			</v-card-title>
-
-			<v-window v-model="step">
-				<v-window-item :value="1">
-					<v-card-text>
-						<span class="text-caption text-grey-darken-1">This is the username we will use to address you.</span>
-						<v-text-field label="Username" type="text" name="username" placeholder="John Doe" required :counter="20" :rules="rules.username" v-model="inputs.username" />
-
-						<span class="text-caption text-grey-darken-1">This is the email you will use to login to your BeSpectacled account.</span>
-						<v-text-field label="Email" type="email" name="email" placeholder="john@doe.com" required :counter="50" :rules="rules.email" v-model="inputs.email" />
-					</v-card-text>
-				</v-window-item>
-
-				<v-window-item :value="2">
-					<v-card-text>
-						<span class="text-caption text-grey-darken-1">Please enter a password for your account.</span>
-						<v-text-field label="Password" type="password" name="password" required :counter="40" :rules="rules.password" v-model="inputs.password" />
-
-						<span class="text-caption text-grey-darken-1">Please confirm your password.</span>
-						<v-text-field label="Confirm Password" type="password" name="confirmPassword" required :counter="40" :rules="rules.confirmPassword" />
-					</v-card-text>
-				</v-window-item>
-
-				<v-window-item :value="3">
-					<div class="pa-4 text-center">
-						<v-img class="mb-4" contain height="128" src="https://cdn.vuetifyjs.com/images/logos/v.svg"></v-img>
-						<h3 class="text-h6 font-weight-light mb-2">Welcome to BeSpectacled</h3>
-						<span class="text-caption text-grey">Thanks for signing up!</span>
-					</div>
-				</v-window-item>
-			</v-window>
-
-			<v-btn v-if="!successful" variant="text" @click="$router.push('/login')">Already registered?</v-btn>
+					<v-col cols="12" sm="6">
+						<v-text-field
+							v-model="inputs.confirmPassword"
+							:counter="40"
+							label="confirmPassword*"
+							type="password"
+							required
+						/>
+					</v-col>
+				</v-row>
+			</v-card-text>
 			
-			<v-divider></v-divider>
-
 			<v-card-actions>
-				<v-btn v-if="step === 2" variant="text" :disabled="loading" @click="step--; form.resetValidation(); valid = true">Back</v-btn>
-				<v-spacer></v-spacer>
-				<v-btn v-if="step === 1" color="primary" variant="flat" :disabled="loading || !valid" @click="step++">Next</v-btn>
-				<v-btn v-if="step === 2" type="submit" color="primary" variant="flat" :disabled="loading || !valid" :loading="loading">Register</v-btn>
-				<v-btn v-if="step === 3" color="primary" variant="flat" :disabled="loading" @click="$router.push('/login')">Login</v-btn>
+				<v-btn color="primary" variant="tonal" @click="$router.push('/login')">Already registered?</v-btn>
+				<v-spacer />
+				<v-btn color="primary" @click="form?.reset()" type="reset">Reset</v-btn>
+				<v-btn :disabled="!inputs.username || !inputs.email || !inputs.password || !inputs.confirmPassword" color="primary" variant="elevated" type="submit" @click="v$.$validate">Register</v-btn>
 			</v-card-actions>
-		</v-card>
-	</v-form>
+		</v-form>
+	</v-card>
 </template>
 
 <style scoped>
-	.v-alert {
-		right: 0;
-	}
+.v-parallax {
+	height: calc(50vh - (48px + 16px * 2)) !important;
+	margin-bottom: 16px;
+}
+
+.card-container.card {
+	padding: 40px 40px;
+}
+
+.card {
+	padding: 20px 25px 30px;
+	margin: 0 auto 25px;
+	margin-top: 50px;
+}
 </style>

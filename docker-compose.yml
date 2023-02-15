@@ -40,7 +40,6 @@ services:
     depends_on:
       - php
       - db
-      - mailcatcher
     networks:
       - symfony-network
   vue:
@@ -51,13 +50,6 @@ services:
       - ${APP_PORT}:${APP_PORT}
     volumes:
       - ./app:/var/www/app
-    working_dir: /var/www/app
-    env_file:
-      - ./.env
-  mailcatcher:
-    image: schickling/mailcatcher
-    ports:
-      - 1080:1080
 
 volumes:
   db-data: {}

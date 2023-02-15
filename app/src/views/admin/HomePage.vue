@@ -9,7 +9,7 @@ import ScheduleService from '@/services/schedule.service'
 const categories = ref([
 	{ name: 'Artist', icon: 'fa fa-user-tie', to: '/artists/', children: [] },
 	{ name: 'Event', icon: 'fa fa-star', to: '/events/', children: [] },
-	{ name: 'Venue', icon: 'fa fa-location-dot', to: '/venues/', children: [] },
+	{ name: 'Venue', icon: 'fa fa-location-dot', to: '/rooms/', children: [] },
 	{ name: 'Schedule', icon: 'fa fa-calendar-days', to: '/schedule/', key: 'day', children: [] }
 ])
 
@@ -36,7 +36,7 @@ const cards = ref(['Entities'])
 	<v-parallax :src="parallax">
 		<div class="d-flex flex-column fill-height justify-center align-center">
 			<div class="text-h2 font-weight-thin mb-4">BeSpectacled Schedule</div>
-			<div class="text-h4 text-secondary">Manage the website's data</div>
+			<div class="text-h4 text-secondary">Manage the website's content</div>
 		</div>
 	</v-parallax>
 
@@ -44,15 +44,31 @@ const cards = ref(['Entities'])
 		<v-col cols="6">
 			<v-card>
 				<v-list lines="two">
-					<v-list-subheader>Main Content</v-list-subheader>
+					<v-list-subheader>Manage Entities</v-list-subheader>
 
 					<v-list-item
 						v-for="{ name, icon, to, key, children } in categories" 
 						:key="name"
 						:prepend-icon="icon"
 						@click="() => $router.push('/admin' + to)"
-						:title="`Manage ${name}`"
-						:subtitle="`${children?.length ?? 0} ${(key || name).toLowerCase()}${children?.length === 1 ? '' : 's'}`"
+						:title="`Manage ${name}s`"
+					/>
+					<!-- :subtitle="`${children?.length ?? 0} ${(key || name).toLowerCase()}${children?.length === 1 ? '' : 's'}`" -->
+				</v-list>
+			</v-card>
+		</v-col>
+
+		<v-col cols="6">
+			<v-card>
+				<v-list lines="two">
+					<v-list-subheader>Create Entities</v-list-subheader>
+
+					<v-list-item
+						v-for="{ name, icon, to, key, children } in categories" 
+						:key="name"
+						:prepend-icon="icon"
+						@click="() => $router.push('/admin' + to + 'create')"
+						:title="`Create ${name}`"
 					/>
 				</v-list>
 			</v-card>

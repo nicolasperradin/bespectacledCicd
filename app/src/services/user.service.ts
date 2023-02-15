@@ -2,7 +2,7 @@ import axios from 'axios'
 
 import headers from './headers'
 
-const API_URL = 'http://localhost/api/'
+const API_URL = import.meta.env.VITE_API_URL
 
 const data = [
 	{ id: 1, username: 'root1', email: 'root1@root.com', roles: ['ROLE_ADMIN'] },
@@ -22,12 +22,13 @@ class UserService {
 
 	artists() {
 		return Promise.resolve({ data: data.filter(u => u.roles.includes('ROLE_ARTIST')) })
-		// return axios.get(API_URL + 'users/artists')
+		// return axios.get(API_URL + 'users', { headers: headers() })
 	}
 
-	getProfile() {
-		return Promise.resolve({ data: JSON.parse(localStorage.getItem('user') || '{}') })
-		// return axios.get(API_URL + 'users/me', { headers: headers() })
+	async profile() {
+		// return Promise.resolve({ data: JSON.parse(localStorage.getItem('user') || 'null') })
+		return axios.get(API_URL + '/users/me', { headers: headers() })
+			.then(({ data }) => localStorage.setItem('me', JSON.stringify(data)))
 	}
 
 	updateProfile(data: any) {

@@ -8,3 +8,11 @@
 // @use 'vuetify' with (
 //   $color-pack: false
 // );
+
+.blend {
+    padding-inline: 8px;
+    border-radius: 5px;
+    background: #FFF;
+    color: black !important;
+    mix-blend-mode: lighten;
+}
