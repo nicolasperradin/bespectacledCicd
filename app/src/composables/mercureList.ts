@@ -1,48 +1,28 @@
-import { onBeforeUnmount } from "vue";
-import type { StoreGeneric } from "pinia";
-import { mercureSubscribe } from "../utils/mercure";
-import type { Item } from "../types/item";
+import { onBeforeUnmount } from 'vue'
+import type { StoreGeneric } from 'pinia'
 
-export function useMercureList({
-  store,
-  deleteStore,
-}: {
-  store: StoreGeneric;
-  deleteStore: StoreGeneric;
-}) {
-  const mercureEl = <T extends Item>(data: T) => {
-    if (Object.keys(data).length === 1) {
-      store.deleteItem(data);
-      deleteStore.setMercureDeleted(data);
-      return;
-    }
+import type { Item } from '@/types/item'
+import { mercureSubscribe } from '@/utils/mercure'
 
-    store.updateItem(data);
-  };
+export function useMercureList({ store, deleteStore }: { store: StoreGeneric, deleteStore: StoreGeneric }) {
+	const mercureEl = <T extends Item>(data: T) => {
+		if (Object.keys(data).length === 1) {
+			store.deleteItem(data)
+			return deleteStore.setMercureDeleted(data)
+		}
 
-  let mercureSub: EventSource | null = null;
+		store.updateItem(data)
+	}
 
-  store.$subscribe((mutation: any, state: any) => {
-    if (!state.hubUrl) {
-      return;
-    }
+	let mercureSub: EventSource | null = null
 
-    if (mercureSub) {
-      mercureSub.close();
-    }
+	store.$subscribe((mutation: any, state: any) => {
+		if (!state.hubUrl) return
+		if (mercureSub) mercureSub.close()
+		if (!state.items?.length) return
 
-    if (!state.items?.length) {
-      return;
-    }
+		mercureSub = mercureSubscribe(state.hubUrl, state.items.map((i: any) => i['@id'] ?? ''), mercureEl)
+	})
 
-    mercureSub = mercureSubscribe(
-      state.hubUrl,
-      state.items.map((i: any) => i["@id"] ?? ""),
-      mercureEl
-    );
-  });
-
-  onBeforeUnmount(() => {
-    mercureSub?.close();
-  });
+	onBeforeUnmount(() => mercureSub?.close())
 }

@@ -9,7 +9,7 @@ import ScheduleService from '@/services/schedule.service'
 const categories = ref([
 	{ name: 'Artist', icon: 'fa fa-user-tie', to: '/artists/', children: [] },
 	{ name: 'Event', icon: 'fa fa-star', to: '/events/', children: [] },
-	{ name: 'Venue', icon: 'fa fa-location-dot', to: '/rooms/', children: [] },
+	{ name: 'Venue', icon: 'fa fa-location-dot', to: '/venues/', children: [] },
 	{ name: 'Schedule', icon: 'fa fa-calendar-days', to: '/schedule/', key: 'day', children: [] }
 ])
 

@@ -1,58 +1,32 @@
-import { onBeforeUnmount } from "vue";
-import { useRouter } from "vue-router";
-import type { StoreGeneric } from "pinia";
-import { mercureSubscribe } from "../utils/mercure";
-import type { Item } from "../types/item";
+import { onBeforeUnmount } from 'vue'
+import { useRouter } from 'vue-router'
+import type { StoreGeneric } from 'pinia'
 
-export function useMercureItem({
-  store,
-  deleteStore,
-  redirectRouteName,
-}: {
-  store: StoreGeneric;
-  deleteStore: StoreGeneric;
-  redirectRouteName: string;
-}) {
-  const router = useRouter();
+import type { Item } from '@/types/item'
+import { mercureSubscribe } from '@/utils/mercure'
 
-  const mercureEl = <T extends Item>(data: T) => {
-    if (Object.keys(data).length === 1) {
-      deleteStore.setMercureDeleted(data);
-      return;
-    }
+// TODO like here, put types on the same line in other files
+export function useMercureItem({ store, deleteStore, redirectRouteName }: { store: StoreGeneric, deleteStore: StoreGeneric, redirectRouteName: string }) {
+	const router = useRouter()
 
-    store.setRetrieved(data);
-  };
+	const mercureEl = <T extends Item>(data: T) => {
+		if (Object.keys(data).length === 1) return deleteStore.setMercureDeleted(data)
+		store.setRetrieved(data)
+	}
 
-  let mercureSub: EventSource | null = null;
+	let mercureSub: EventSource | null = null
 
-  store.$subscribe((mutation: any, state: any) => {
-    if (!state.hubUrl) {
-      return;
-    }
+	store.$subscribe((mutation: any, state: any) => {
+		if (!state.hubUrl) return
+		if (mercureSub) mercureSub.close()
+		if (!state.retrieved) return
 
-    if (mercureSub) {
-      mercureSub.close();
-    }
+		mercureSub = mercureSubscribe(state.hubUrl, [state.retrieved['@id'] ?? ''], mercureEl)
+	})
 
-    if (!state.retrieved) {
-      return;
-    }
+	deleteStore.$subscribe((mutation: any, state: any) => {
+		if (state.mercureDeleted) router.push({ name: redirectRouteName })
+	})
 
-    mercureSub = mercureSubscribe(
-      state.hubUrl,
-      [state.retrieved["@id"] ?? ""],
-      mercureEl
-    );
-  });
-
-  deleteStore.$subscribe((mutation: any, state: any) => {
-    if (state.mercureDeleted) {
-      router.push({ name: redirectRouteName });
-    }
-  });
-
-  onBeforeUnmount(() => {
-    mercureSub?.close();
-  });
+	onBeforeUnmount(() => mercureSub?.close())
 }

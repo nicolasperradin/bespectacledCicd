@@ -1,24 +1,27 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-import roomRoutes from './room'
-import userRoutes from './user'
-import eventRoutes from './event'
-import ticketingRoutes from './ticketing'
-import roomreservationRoutes from './roomreservation'
-import userconfirmationRoutes from './userconfirmation'
-import paymenttransactionRoutes from './paymenttransaction'
+// import user from './user'
+import event from './event'
+// import venue from './venue'
+// import schedule from './schedule'
+import { useAuthStore } from '@/store'
+
+// beforeEnter: [to => { ...to, query: {} }, { ...to, hash: '' }],
+
+declare module 'vue-router' {
+	interface RouteMeta {
+		requires?: string
+	}
+}
 
 const routes = [
 	{
-		path: '/admin/', component: () => import('@/layouts/Admin.vue'), children: [
+		path: '/admin/', component: () => import('@/layouts/Admin.vue'), meta: { requires: 'admin' }, children: [
 			{ path: '', name: 'admin', component: () => import('@/views/admin/HomePage.vue') },
-			...roomRoutes,
-			...userRoutes,
-			...eventRoutes,
-			...ticketingRoutes,
-			...roomreservationRoutes,
-			...userconfirmationRoutes,
-			...paymenttransactionRoutes
+			// ...user,
+			...event,
+			// ...venue,
+			// ...schedule
 		]
 	},
 	{
@@ -28,18 +31,18 @@ const routes = [
 			{ path: 'artists/:id', name: 'artist', component: () => import('@/views/default/BlankPage.vue') },
 			{ path: 'events', name: 'events', component: () => import('@/views/default/EventsPage.vue') },
 			{ path: 'events/:id', name: 'event', component: () => import('@/views/default/BlankPage.vue') },
-			{ path: 'rooms', name: 'rooms', component: () => import('@/views/default/VenuesPage.vue') },
-			{ path: 'venues/:id', name: 'room', component: () => import('@/views/default/BlankPage.vue') },
-			{ path: 'schedule', name: 'schedule', component: () => import('@/views/default/SchedulePage.vue') },
+			{ path: 'venues', name: 'venues', component: () => import('@/views/default/VenuesPage.vue') },
+			{ path: 'venues/:id', name: 'venue', component: () => import('@/views/default/BlankPage.vue') },
+			{ path: 'calendar', name: 'calendar', component: () => import('@/views/default/CalendarPage.vue') },
 			{ path: 'ticketing', name: 'ticketing', component: () => import('@/views/default/BlankPage.vue') },
 
-			{ path: 'orders', name: 'orders', component: () => import('@/views/default/BlankPage.vue') },
-			{ path: 'tickets', name: 'tickets', component: () => import('@/views/default/BlankPage.vue') },
-			{ path: 'profile', name: 'profile', component: () => import('@/views/default/ProfilePage.vue') },
+			{ path: 'orders', name: 'orders', component: () => import('@/views/default/BlankPage.vue'), meta: { requires: 'auth' } },
+			{ path: 'tickets', name: 'tickets', component: () => import('@/views/default/BlankPage.vue'), meta: { requires: 'auth' } },
+			{ path: 'profile', name: 'profile', component: () => import('@/views/default/ProfilePage.vue'), meta: { requires: 'auth' } },
 
-			{ path: 'login', name: 'login', component: () => import('@/views/default/LoginPage.vue') },
-			{ path: 'register', name: 'register', component: () => import('@/views/default/RegisterPage.vue') },
-			{ path: 'forgot-password', name: 'forgot-password', component: () => import('@/views/default/ForgotPasswordPage.vue') },
+			{ path: 'login', name: 'login', component: () => import('@/views/default/LoginPage.vue'), meta: { requires: 'guest' } },
+			{ path: 'register', name: 'register', component: () => import('@/views/default/RegisterPage.vue'), meta: { requires: 'guest' } },
+			{ path: 'forgot-password', name: 'forgot-password', component: () => import('@/views/default/ForgotPasswordPage.vue'), meta: { requires: 'guest' } },
 
 			{ path: '/:pathMatch(.*)*', name: 'not-found', component: () => import('@/views/default/NotFoundPage.vue') }
 		]
@@ -51,15 +54,11 @@ const router = createRouter({ history: createWebHistory(), routes })
 export default router
 
 router.beforeEach((to, from, next) => {
-	const guestPages = [
-		'/', '/artists', '/events', '/rooms', '/schedule',
-		'/login', '/register', '/forget-password'
-	]
-	const authRequired = !guestPages.includes(to.path)
-	const user = JSON.parse(localStorage.getItem('user') || 'null')
+	const auth = useAuthStore()
 
-	// trying to access a restricted page + not logged in
-	// redirect to login page
-	if (authRequired && !user?.token) next('/login')
+	if (!to.meta?.requires) next()
+	else if (to.meta.requires == 'admin' && !auth?.user?.roles?.includes('ROLE_ADMIN')) next('/')
+	else if (to.meta.requires == 'auth' && !auth?.user?.token) next('/login')
+	else if (to.meta.requires == 'guest' && auth?.user?.token) next('/')
 	else next()
 })

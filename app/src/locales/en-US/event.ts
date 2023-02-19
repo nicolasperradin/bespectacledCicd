@@ -1,7 +1,9 @@
 export default {
-  name: "Name",
-  room: "Room",
-  artists: "Artists",
-  price: "Price",
-  schedules: "Schedules",
-};
+	title: 'Title',
+	type: 'Type',
+	price: 'Price',
+	src: 'Image',
+	venue: 'Venue',
+	artists: 'Artists',
+	schedules: 'Schedules'
+}

@@ -41,37 +41,37 @@ use Symfony\Component\Validator\Constraints as Assert;
 class Event
 {
     #[ORM\Id]
-    #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[ORM\GeneratedValue]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
-    #[Groups(['event:read', 'event:write'])]
     #[Assert\NotBlank]
+    #[ORM\Column(length: 255)]
     #[Assert\Length(min: 3, max: 255)]
+    #[Groups(['event:read', 'event:write'])]
     private ?string $name = null;
 
-    #[ORM\ManyToOne(inversedBy: 'events')]
-    #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['event:read', 'event:write'])]
     #[Assert\NotBlank]
+    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\ManyToOne(inversedBy: 'events')]
+    #[Groups(['event:read', 'event:write'])]
     private ?Room $room = null;
 
-    #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'events')]
-    #[ORM\JoinTable(name: 'event_artist')]
-    #[Groups(['event:read', 'event:write'])]
     #[Assert\NotBlank]
     #[Assert\Count(min: 1)]
+    #[ORM\JoinTable(name: 'event_artist')]
+    #[Groups(['event:read', 'event:write'])]
+    #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'events')]
     private Collection $artists;
 
-    #[ORM\Column(type: "float")]
-    #[Groups(['event:read', 'event:write'])]
     #[Assert\NotBlank]
     #[Assert\Positive]
+    #[ORM\Column(type: "float")]
+    #[Groups(['event:read', 'event:write'])]
     private ?int $price = null;
 
-    #[ORM\OneToMany(mappedBy: 'event', targetEntity: Schedule::class)]
     #[Groups(['event:read', 'event:write'])]
+    #[ORM\OneToMany(mappedBy: 'event', targetEntity: Schedule::class)]
     private Collection $schedules;
 
     public function __construct()

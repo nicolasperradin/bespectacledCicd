@@ -1,8 +1,6 @@
-// import { createStore } from 'vuex'
+export * from './auth'
+export * from './theme'
 
-export * from './auth.store';
-export * from './theme.store';
-// export * from './users.store';
-
-// import auth from './auth.store'
-// import theme from './theme.store'
+// export * from './user'
+export * from './event'
+// export * from './venue'

@@ -4,11 +4,15 @@ import { defineStore } from 'pinia'
 import router from '@/router'
 import headers from './headers'
 
+interface State {
+	user?: any
+	returnUrl: string
+}
+
 const baseUrl = import.meta.env.VITE_API_URL
 
-export const useAuthStore = defineStore({
-	id: 'auth',
-	state: () => ({
+export const useAuthStore = defineStore('auth', {
+	state: (): State => ({
 		// initialize state from local storage to enable user to stay logged in
 		user: JSON.parse(localStorage.getItem('user') || 'null'),
 		returnUrl: '/profile'
@@ -39,7 +43,7 @@ export const useAuthStore = defineStore({
 			this.user = null
 			localStorage.removeItem('user')
 			router.push('/login')
-			router.go(0)
+			// router.go(0)
 		},
 		profile(data = null) {
 			return axios.get(`${baseUrl}/users/me`, { headers: headers(data) })

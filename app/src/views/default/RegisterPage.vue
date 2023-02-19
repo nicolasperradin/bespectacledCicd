@@ -48,7 +48,7 @@ const handleRegister = async (user: any) => {
 		toast.value.color = 'success'
 		message.value = 'Register successful!'
 		$router.push('/login')
-		$router.go(0)
+		// $router.go(0)
 		// await $store.dispatch('auth/login', user)
 	} catch (err: any) {
 		toast.value.color = 'danger'
@@ -62,8 +62,8 @@ const handleRegister = async (user: any) => {
 <template>
 	<v-parallax :src="parallax">
 		<div class="d-flex flex-column fill-height justify-center align-center">
-			<div class="text-white-50 text-h2 font-weight-thin mb-4">BeSpectacled Login</div>
-			<div class="text-h4 text-primary">Register</div>
+			<div class="text-white-50 text-h2 font-weight-thin mb-4">BeSpectacled Register</div>
+			<div class="text-h4 text-primary">Create an account</div>
 		</div>
 	</v-parallax>
 
@@ -117,7 +117,7 @@ const handleRegister = async (user: any) => {
 						<v-text-field
 							v-model="inputs.confirmPassword"
 							:counter="40"
-							label="confirmPassword*"
+							label="Confirm Password*"
 							type="password"
 							required
 						/>

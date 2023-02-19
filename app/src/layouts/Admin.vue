@@ -2,12 +2,12 @@
 import { computed, onBeforeMount, onMounted, ref } from 'vue'
 import { useTheme } from 'vuetify'
 import { useRouter } from 'vue-router'
-import { useAuthStore, useThemeStore } from '@/store'
-import { useEventListStore } from '@/store/event/list'
 
 import UserService from '@/services/user.service'
 import EventService from '@/services/event.service'
 import VenueService from '@/services/venue.service'
+import { useAuthStore, useThemeStore } from '@/store'
+import { useEventListStore } from '@/store/event/list'
 
 const $theme = useTheme()
 const $router = useRouter()
@@ -22,7 +22,7 @@ const user = computed(() => $store.user)
 const categories = ref([
 	{ name: 'Users', icon: 'fa fa-user-tie', to: '/users/', key: 'username', children: [] },
 	{ name: 'Events', icon: 'fa fa-star', to: '/events/', key: 'title', children: [] },
-	{ name: 'Venues', icon: 'fa fa-location-dot', to: '/rooms/', key: 'name', children: [] },
+	{ name: 'Venues', icon: 'fa fa-location-dot', to: '/venues/', key: 'name', children: [] },
 	{ name: 'Schedules', icon: 'fa fa-calendar-days', to: '/schedule/' }
 ])
 

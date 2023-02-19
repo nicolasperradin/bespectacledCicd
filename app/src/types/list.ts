@@ -1,18 +1,18 @@
 export interface Filters {
-  [key: string]: string;
+	[key: string]: string
 }
 
 export interface Order {
-  [key: string]: "asc" | "desc";
+	[key: string]: 'asc' | 'desc'
 }
 
 export interface VuetifyOrder {
-  key: string;
-  order: string;
+	key: string
+	order: string
 }
 
 export interface ListParams {
-  page: string;
-  filters?: Filters;
-  order?: Order;
+	page: string
+	filters?: Filters
+	order?: Order
 }

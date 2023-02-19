@@ -101,7 +101,7 @@ const onIntersect = {
 
 								<v-list>
 									<v-list-item link prepend-icon="fa fa-circle-info" title="View Event Details" @click="() => $router.push({ name: 'event', params: { id } })" />
-									<v-list-item link prepend-icon="fa fa-calendar-days" title="Check Available Times" @click="() => $router.push({ name: 'schedule', query: { event: id } })" />
+									<v-list-item link prepend-icon="fa fa-calendar-days" title="Check Available Times" @click="() => $router.push({ name: 'calendar', query: { event: id } })" />
 									<v-list-item link prepend-icon="fa fa-ticket" title="Buy Tickets" @click="() => $router.push({ name: 'ticketing', query: { event: id } })" />
 								</v-list>
 							</v-card>

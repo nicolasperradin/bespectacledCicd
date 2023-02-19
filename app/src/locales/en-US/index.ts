@@ -1,10 +1,7 @@
-import room from './room'
-import user from './user'
+// import user from './user'
+// import venue from './venue'
 import event from './event'
-import ticketing from './ticketing'
-import roomreservation from './roomreservation'
-import userconfirmation from './userconfirmation'
-import paymenttransaction from './paymenttransaction'
+// import schedule from './schedule'
 
 export default {
 	home: 'Home',
@@ -20,20 +17,17 @@ export default {
 	filter: 'Filter',
 	actions: 'Actions',
 	id: 'Id',
-	itemCreated: '{0} created',
-	itemUpdated: '{0} updated',
-	itemDeleted: '{0} deleted',
-	itemDeletedByAnotherUser: '{0} deleted by another user',
+	itemCreated: '{0} created.',
+	itemUpdated: '{0} updated.',
+	itemDeleted: '{0} deleted.',
+	itemDeletedByAnotherUser: '{0} deleted by another user.',
 	field: 'Field',
 	value: 'Value',
-	itemNotFound: 'No item found. Please reload',
+	itemNotFound: 'No item found. Please reload.',
 	confirmDelete: 'Are you sure you want to delete this item?',
 	loading: 'Loading...',
-	room,
-	user,
+	// user,
 	event,
-	ticketing,
-	roomreservation,
-	userconfirmation,
-	paymenttransaction
+	// venue,
+	// schedule
 }

@@ -2,11 +2,11 @@
 import { computed, onBeforeMount, onMounted, ref } from 'vue'
 import { useTheme } from 'vuetify'
 import { useRouter } from 'vue-router'
-import { useAuthStore, useThemeStore } from '@/store'
 
 import UserService from '@/services/user.service'
 import EventService from '@/services/event.service'
 import VenueService from '@/services/venue.service'
+import { useAuthStore, useThemeStore } from '@/store'
 
 const $theme = useTheme()
 const $router = useRouter()
@@ -19,10 +19,11 @@ const scrolled = ref(false)
 const user = ref($store.user)
 
 const categories = ref([
-	{ name: 'Artists', icon: 'fa fa-user-tie text-blue-darken-4', to: '/artists/', key: 'username', children: [] },
-	{ name: 'Events', icon: 'fa fa-star text-warning', to: '/events/', key: 'title', children: [] },
-	{ name: 'Venues', icon: 'fa fa-location-dot text-success', to: '/rooms/', key: 'name', children: [] },
-	{ name: 'Schedule', icon: 'fa fa-calendar-days text-danger', to: '/schedule/' }
+	{ name: 'Artists', icon: 'fa fa-user-tie text-blue-darken-4', to: '/artists', key: 'username', children: [] },
+	{ name: 'Events', icon: 'fa fa-star text-warning', to: '/events', key: 'title', children: [] },
+	{ name: 'Venues', icon: 'fa fa-location-dot text-success', to: '/venues', key: 'name', children: [] },
+	{ name: 'Calendar', icon: 'fa fa-calendar-days text-danger', to: '/calendar' },
+	{ name: 'Ticketing', icon: 'fa fa-ticket text-secondary', to: '/ticketing' }
 ])
 
 // onBeforeMount(() => $theme.global.name.value = $store.state.theme.dark ? 'dark' : 'light')

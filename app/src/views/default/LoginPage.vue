@@ -19,9 +19,7 @@ const user = ref($store.user)
 const showPassword = ref(false)
 const inputs = reactive({ email: '', password: '' })
 const form = ref<null | typeof import('vuetify/components')['VForm']>(null)
-const toast = computed(() => { return { state: !!message.value, color: 'success' } })
-
-const errors = reactive({ email: '', password: '' })
+const toast = ref({ state: false, color: 'success' })
 
 const rules = {
 	email: { required, email, maxLength: maxLength(50) },
@@ -33,8 +31,8 @@ const v$ = useVuelidate(rules, inputs)
 // TODO handle this in the router.onBeforeEach hook instead
 onBeforeMount(() => user.value && $router.push('/profile'))
 
-watch(message, val => val && setTimeout(() => message.value = '', 3000))
-watch(valid, valid => console.log('valid', valid))
+// watch(message, val => val && setTimeout(() => message.value = '', 3000))
+watch(toast, toast => console.log('toast', toast))
 
 const handleLogin = async (user: any) => {
 	if (!valid.value) return
@@ -43,12 +41,14 @@ const handleLogin = async (user: any) => {
 
 	try {
 		const data = await $store.login(user)
+		toast.value.state = true
 		toast.value.color = 'success'
 		message.value = 'Login successful!'
 		$router.push(data)
-		$router.go(0)
+		// $router.go(0)
 		// await $store.dispatch('auth/login', user)
 	} catch (err: any) {
+		toast.value.state = true
 		toast.value.color = 'danger'
 		message.value = err?.response?.data?.message || err.message || err.toString()
 	} finally {
