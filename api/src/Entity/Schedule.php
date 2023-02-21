@@ -2,39 +2,40 @@
 
 namespace App\Entity;
 
-use App\Repository\ScheduleRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use App\Repository\ScheduleRepository;
+use ApiPlatform\Metadata\ApiResource;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ScheduleRepository::class)]
-#[ApiResource(
-    collectionOperations: [
-        'get' => [
-            'normalization_context' => [
-                'groups' => ['schedule:read']
-            ]
-        ],
-        'post' => [
-            'denormalization_context' => [
-                'groups' => ['schedule:write']
-            ]
-        ]
-    ],
-    itemOperations: [
-        'get' => [
-            'normalization_context' => [
-                'groups' => ['schedule:read']
-            ]
-        ],
-        'put' => [
-            'denormalization_context' => [
-                'groups' => ['schedule:write']
-            ]
-        ]
-    ]
-)]
+// #[ApiResource(
+//     collectionOperations: [
+//         'get' => [
+//             'normalization_context' => [
+//                 'groups' => ['schedule:read']
+//             ]
+//         ],
+//         'post' => [
+//             'denormalization_context' => [
+//                 'groups' => ['schedule:write']
+//             ]
+//         ]
+//     ],
+//     itemOperations: [
+//         'get' => [
+//             'normalization_context' => [
+//                 'groups' => ['schedule:read']
+//             ]
+//         ],
+//         'put' => [
+//             'denormalization_context' => [
+//                 'groups' => ['schedule:write']
+//             ]
+//         ]
+//     ]
+// )]
 class Schedule
 {
     #[ORM\Id]
@@ -46,11 +47,11 @@ class Schedule
     #[Groups(['schedule:read', 'schedule:write'])]
     private ?Event $event = null;
 
-    #[ORM\Column(type: Types::DATE_MUTABLE)]
+    #[ORM\Column]
     #[Groups(['schedule:read', 'schedule:write'])]
-    private ?\DateTimeInterface $date = null;
+    private ?string $date = null;
 
-    #[ORM\Column(type: Types::ARRAY)]
+    #[ORM\Column(type: Types::JSON)]
     #[Groups(['schedule:read', 'schedule:write'])]
     #[Assert\NotBlank]
     private array $times = [];
@@ -72,12 +73,12 @@ class Schedule
         return $this;
     }
 
-    public function getDate(): ?\DateTimeInterface
+    public function getDate(): ?string
     {
         return $this->date;
     }
 
-    public function setDate(\DateTimeInterface $date): self
+    public function setDate(string $date): self
     {
         $this->date = $date;
 

@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Entity\PaymentTransaction;
+use App\Entity\Transaction;
 use Stripe\Checkout\Session;
 use Stripe\Stripe;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;

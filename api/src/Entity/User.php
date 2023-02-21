@@ -2,135 +2,136 @@
 
 namespace App\Entity;
 
-use App\Repository\UserRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
+use ApiPlatform\Metadata\Get;
+use ApiPlatform\Metadata\Put;
+use ApiPlatform\Metadata\Post;
+use ApiPlatform\Metadata\Delete;
 use Doctrine\ORM\Mapping as ORM;
-use ApiPlatform\Core\Annotation\ApiResource;
-use Symfony\Component\Serializer\Annotation\Groups;
-use Symfony\Component\Serializer\Annotation\SerializedName;
-use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
-use Symfony\Component\Security\Core\User\UserInterface;
 use App\Controller\UserController;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use App\Repository\UserRepository;
+use ApiPlatform\Metadata\ApiResource;
+use ApiPlatform\Metadata\GetCollection;
+use App\Controller\ResetPasswordAction;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
+use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Serializer\Annotation\SerializedName;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 
-#[ORM\Entity(repositoryClass: UserRepository::class)]
-#[ORM\Table(name: "`user`")]
 #[ApiResource(
-    normalizationContext: ["groups" => ["user:get"]],
-    denormalizationContext: ["groups" => ["user:post"]],
-    collectionOperations: [
-        "get" => [
-            "pagination_enabled" => false,
-            "access_control" => "is_granted('ROLE_ADMIN')",
-            "normalization_context" => ["groups" => ["user:get"]]
-        ],
-        "post" => [
-            "pagination_enabled" => false,
-            "denormalization_context" => ["groups" => ["user:post"]]
-        ],
-        "me" => [
-            "method" => "GET",
-            "path" => "/users/me",
-            "controller" => UserController::class,
-            "pagination_enabled" => false
-        ]
-    ],
-    validationGroups: ["user:get", "user:post", "user:put"],
-    itemOperations: [
-        "get" => [
-            "normalization_context" => [
-                "groups" => ["user:get"],
-                "access_control" => "is_granted('IS_AUTHENTICATED_FULLY') and object == user  or is_granted('ROLE_ADMIN')"
+    normalizationContext: ['groups' => ['user:get']],
+    denormalizationContext: ['groups' => ['user:post']],
+    validationContext: ['groups' => ['user:get', 'user:post', 'user:put']],
+    operations: [
+        new GetCollection(
+            paginationEnabled: false,
+            security: "is_granted('ROLE_ADMIN', user)'",
+            normalizationContext: ['groups' => ['user:get']]
+        ),
+        new Post(
+            paginationEnabled: false,
+            denormalizationContext: ['groups' => ['user:post']]
+        ),
+        new Get(
+            uriTemplate: '/users/me',
+            controller: UserController::class,
+            paginationEnabled: false
+        ),
+        new Get(
+            // uriTemplate: '/users/{id}',
+            normalizationContext: [
+                'groups' => ['user:get'],
+                'access_control' => "is_granted('IS_AUTHENTICATED_FULLY') and object == user or is_granted('ROLE_ADMIN')"
             ]
-        ],
-        "put" => [
-            "denormalization_context" => ["groups" => ["user:put"]],
-            "normalization_context" => ["groups" => ["user:get"]],
-            "access_control" => "is_granted('IS_AUTHENTICATED_FULLY') and object == user or is_granted('ROLE_ADMIN')"
-        ],
-        "delete" => [
-            "access_control" => "is_granted('IS_AUTHENTICATED_FULLY') and object == user or is_granted('ROLE_ADMIN')"
-        ],
-        "put-password" => [
-            "method" => "PUT",
-            "path" => "/users/{id}/reset-password",
-            "controller" => ResetPasswordAction::class,
-            "denormalization_context" => ["groups" => ["user:reset:password"]],
-            "access_control" => "is_granted('IS_AUTHENTICATED_FULLY') and object == user"
-        ]
+        ),
+        new Put(
+            // uriTemplate: '/users/{id}',
+            denormalizationContext: ['groups' => ['user:put']],
+            normalizationContext: ['groups' => ['user:get']],
+            security: "is_granted('IS_AUTHENTICATED_FULLY') and object == user or is_granted('ROLE_ADMIN')"
+        ),
+        new Delete(
+            // uriTemplate: '/users/{id}',
+            security: "is_granted('IS_AUTHENTICATED_FULLY') and object == user or is_granted('ROLE_ADMIN')"
+        ),
+        // new Put(
+        //     uriTemplate: '/users/{id}/reset-password',
+        //     controller: ResetPasswordAction::class,
+        //     denormalizationContext: ['groups' => ['user:reset:password']],
+        //     security: "is_granted('IS_AUTHENTICATED_FULLY') and object == user"
+        // )
     ]
 )]
 #[ORM\HasLifecycleCallbacks]
-#[UniqueEntity("email")]
+#[ORM\Entity(repositoryClass: UserRepository::class)]
+#[UniqueEntity('email', message: 'This email is already used.')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\PrePersist]
     #[ORM\PreUpdate]
-    public function updatedTimestamps(): void
+    public function updateTimestamps(): void
     {
-        $this->setUpdatedAt(new \DateTime('now'));
-        if ($this->getCreatedAt() === null) {
-            $this->setCreatedAt(new \DateTime('now'));
-        }
+        if ($this->getCreatedAt() === null) $this->setCreatedAt(new \DateTimeImmutable());
+        $this->setUpdatedAt(new \DateTimeImmutable());
     }
 
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(type: "integer")]
-    #[Groups("user:get")]
-    private $id;
+    #[ORM\Column()]
+    #[Groups('user:get')]
+    private ?int $id = null;
 
-
-    #[Groups(["user:post", "user:get"])]
     #[Assert\NotBlank]
     #[Assert\Email]
-    #[ORM\Column(type: "string", length: 180, unique: true)]
-    private $email;
+    #[ORM\Column(length: 180, unique: true)]
+    #[Groups(['user:get', 'user:post'])]
+    private ?string $email = null;
 
-    #[ORM\Column(type: "json")]
-    #[Groups("user:get")]
-    private $roles = [];
+    #[ORM\Column()]
+    #[Groups('user:get')]
+    private array $roles = [];
 
-    #[ORM\Column(type: "string")]
-    #[Assert\NotBlank]
+    #[ORM\Column()]
     #[Assert\Regex(
         pattern: "/(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{7,}/",
         message: "Password must be seven characters long and contain at least one digit, one upper case letter and one lower case letter"
     )]
-    private $password;
+    #[Groups(['user:post', 'user:get'])]
+    private ?string $password = null;
 
     #[SerializedName("password")]
     #[Assert\NotBlank]
     #[Groups("user:post")]
     private $plainPassword;
 
-
-    #[ORM\Column(type: "string", length: 255)]
-    #[Groups(["user:post", "user:get"])]
+    #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(['user:post', 'user:get'])]
     #[Assert\NotBlank]
     private $username;
 
-    #[ORM\Column(type: "boolean", options: ["default" => "0"])]
+    #[ORM\Column(type: 'boolean', options: ['default' => '0'])]
     private $enabled = false;
 
-    #[ORM\Column(type: "string", length: 40, nullable: true)]
+    #[ORM\Column(length: 40, nullable: true)]
     private $confirmationToken;
 
     #[Groups(["user:get"])]
-    #[ORM\Column(type: "datetime")]
-    private $createdAt;
+    #[ORM\Column]
+    private ?\DateTimeImmutable $createdAt = null;
 
     #[Groups(["user:get"])]
-    #[ORM\Column(type: "datetime", nullable: true)]
-    private $updatedAt;
+    #[ORM\Column]
+    private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column(name: "password_change_date", type: "integer", nullable: true)]
     private $passwordChangeDate;
 
+    // TODO this class below doesn't exist
+    // #[SecurityAssert\UserPassword(message: "Wrong value for your current password")]
     #[Groups(["user:reset:password"])]
-    #[SecurityAssert\UserPassword(message: "Wrong value for your current password")]
     private $oldPassword;
 
     #[Groups(["user:reset:password"])]
@@ -150,16 +151,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     )]
     private $newRetypedPassword;
 
-    #[ORM\OneToMany(mappedBy: 'client', targetEntity: RoomReservation::class)]
+    #[ORM\OneToMany(mappedBy: 'client', targetEntity: Booking::class)]
     #[Groups("user:get")]
-    private Collection $roomReservations;
+    private Collection $bookings;
 
-    #[ORM\OneToMany(mappedBy: 'buyer', targetEntity: Ticketing::class)]
+    #[ORM\OneToMany(mappedBy: 'buyer', targetEntity: Ticket::class)]
     #[Groups("user:get")]
-    private Collection $ticketings;
+    private Collection $tickets;
 
-    #[ORM\OneToMany(mappedBy: 'buyer', targetEntity: PaymentTransaction::class)]
-    private Collection $paymentTransactions;
+    #[ORM\OneToMany(mappedBy: 'buyer', targetEntity: Transaction::class)]
+    private Collection $transactions;
 
     #[ORM\Column(type: "boolean", options: ["default" => "0"])]
     private $validatedAccountArtist = false;
@@ -173,9 +174,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function __construct()
     {
-        $this->roomReservations = new ArrayCollection();
-        $this->ticketings = new ArrayCollection();
-        $this->paymentTransactions = new ArrayCollection();
+        $this->bookings = new ArrayCollection();
+        $this->tickets = new ArrayCollection();
+        $this->transactions = new ArrayCollection();
         $this->events = new ArrayCollection();
     }
 
@@ -372,12 +373,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getUpdatedAt(): ?\DateTimeInterface
+    public function getUpdatedAt(): ?\DateTimeImmutable
     {
         return $this->updatedAt;
     }
 
-    public function setUpdatedAt(?\DateTimeInterface $updatedAt): self
+    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): self
     {
         $this->updatedAt = $updatedAt;
 
@@ -434,29 +435,29 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * @return Collection<int, RoomReservation>
+     * @return Collection<int, Booking>
      */
-    public function getRoomReservations(): Collection
+    public function getBookings(): Collection
     {
-        return $this->roomReservations;
+        return $this->bookings;
     }
 
-    public function addRoomReservation(RoomReservation $roomReservation): self
+    public function addBooking(Booking $booking): self
     {
-        if (!$this->roomReservations->contains($roomReservation)) {
-            $this->roomReservations->add($roomReservation);
-            $roomReservation->setClient($this);
+        if (!$this->bookings->contains($booking)) {
+            $this->bookings->add($booking);
+            $booking->setClient($this);
         }
 
         return $this;
     }
 
-    public function removeRoomReservation(RoomReservation $roomReservation): self
+    public function removeBooking(Booking $booking): self
     {
-        if ($this->roomReservations->removeElement($roomReservation)) {
+        if ($this->bookings->removeElement($booking)) {
             // set the owning side to null (unless already changed)
-            if ($roomReservation->getClient() === $this) {
-                $roomReservation->setClient(null);
+            if ($booking->getClient() === $this) {
+                $booking->setClient(null);
             }
         }
 
@@ -464,29 +465,29 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * @return Collection<int, Ticketing>
+     * @return Collection<int, Ticket>
      */
-    public function getTicketings(): Collection
+    public function getTickets(): Collection
     {
-        return $this->ticketings;
+        return $this->tickets;
     }
 
-    public function addTicketing(Ticketing $ticketing): self
+    public function addTicket(Ticket $ticket): self
     {
-        if (!$this->ticketings->contains($ticketing)) {
-            $this->ticketings->add($ticketing);
-            $ticketing->setBuyer($this);
+        if (!$this->tickets->contains($ticket)) {
+            $this->tickets->add($ticket);
+            $ticket->setBuyer($this);
         }
 
         return $this;
     }
 
-    public function removeTicketing(Ticketing $ticketing): self
+    public function removeTicket(Ticket $ticket): self
     {
-        if ($this->ticketings->removeElement($ticketing)) {
+        if ($this->tickets->removeElement($ticket)) {
             // set the owning side to null (unless already changed)
-            if ($ticketing->getBuyer() === $this) {
-                $ticketing->setBuyer(null);
+            if ($ticket->getBuyer() === $this) {
+                $ticket->setBuyer(null);
             }
         }
 
@@ -494,29 +495,29 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     }
 
     /**
-     * @return Collection<int, PaymentTransaction>
+     * @return Collection<int, Transaction>
      */
-    public function getPaymentTransactions(): Collection
+    public function getTransactions(): Collection
     {
-        return $this->paymentTransactions;
+        return $this->transactions;
     }
 
-    public function addPaymentTransaction(PaymentTransaction $paymentTransaction): self
+    public function addTransaction(Transaction $transaction): self
     {
-        if (!$this->paymentTransactions->contains($paymentTransaction)) {
-            $this->paymentTransactions->add($paymentTransaction);
-            $paymentTransaction->setBuyer($this);
+        if (!$this->transactions->contains($transaction)) {
+            $this->transactions->add($transaction);
+            $transaction->setBuyer($this);
         }
 
         return $this;
     }
 
-    public function removePaymentTransaction(PaymentTransaction $paymentTransaction): self
+    public function removeTransaction(Transaction $transaction): self
     {
-        if ($this->paymentTransactions->removeElement($paymentTransaction)) {
+        if ($this->transactions->removeElement($transaction)) {
             // set the owning side to null (unless already changed)
-            if ($paymentTransaction->getBuyer() === $this) {
-                $paymentTransaction->setBuyer(null);
+            if ($transaction->getBuyer() === $this) {
+                $transaction->setBuyer(null);
             }
         }
 

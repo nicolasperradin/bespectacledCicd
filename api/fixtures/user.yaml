@@ -1,0 +1,19 @@
+parameters:
+  hash: '$2y$13$7bkYkOPNhCqyo/rJ2cdp4uQa/4No.RWsHn9pKDXQEJ6EjNCEfymTW'
+
+App\Entity\User:
+  admin:
+    email: 'root1\@root.com'
+    roles: "['ROLE_ADMIN']"
+    password: <{hash}>
+    username: 'root1'
+  artist{1..5}:
+    email: 'artist<current()>\@root.com'
+    roles: "['ROLE_ARTIST']"
+    password: <{hash}>
+    username: <username()>
+  user{1..5}:
+    email: 'user<current()>\@root.com'
+    roles: "['ROLE_USER']"
+    password: <{hash}>
+    username: <username()>

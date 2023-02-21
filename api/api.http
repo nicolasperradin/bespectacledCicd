@@ -1,0 +1,33 @@
+@baseUrl = http://localhost/api
+@email = "root1@root.com"
+@password = "password"
+
+### Login
+# @name login
+POST {{baseUrl}}/login
+Content-Type: application/json
+
+{
+    "email": {{email}},
+    "password": {{password}}
+}
+###
+
+@code = {{login.response.body.code}}
+@message = {{login.response.body.message}}
+@token = {{login.response.headers.X-Debug-Token}}
+# @token = {{login.response.body.token}}
+
+### Get collection: users
+GET {{baseUrl}}/users
+Authorization: Bearer {{token}}
+
+### Same with pagination
+GET {{baseUrl}}/users?page=1
+Authorization: Bearer {{token}}
+###
+
+### Get item: user
+GET {{baseUrl}}/users/1
+Authorization: Bearer {{token}}
+###

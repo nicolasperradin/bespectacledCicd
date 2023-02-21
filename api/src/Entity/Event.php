@@ -2,42 +2,42 @@
 
 namespace App\Entity;
 
-use App\Repository\EventRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-use ApiPlatform\Core\Annotation\ApiResource;
+use App\Repository\EventRepository;
+use Doctrine\Common\Collections\Collection;
+use ApiPlatform\Metadata\ApiResource;
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: EventRepository::class)]
-#[ApiResource(
-    collectionOperations: [
-        'get' => [
-            'normalization_context' => [
-                'groups' => ['event:read']
-            ]
-        ],
-        'post' => [
-            'denormalization_context' => [
-                'groups' => ['event:write']
-            ]
-        ]
-    ],
-    itemOperations: [
-        'get' => [
-            'normalization_context' => [
-                'groups' => ['event:read']
-            ]
-        ],
-        'put' => [
-            'denormalization_context' => [
-                'groups' => ['event:write']
-            ]
-        ]
-    ]
-)]
+// #[ApiResource(
+//     collectionOperations: [
+//         'get' => [
+//             'normalization_context' => [
+//                 'groups' => ['event:read']
+//             ]
+//         ],
+//         'post' => [
+//             'denormalization_context' => [
+//                 'groups' => ['event:write']
+//             ]
+//         ]
+//     ],
+//     itemOperations: [
+//         'get' => [
+//             'normalization_context' => [
+//                 'groups' => ['event:read']
+//             ]
+//         ],
+//         'put' => [
+//             'denormalization_context' => [
+//                 'groups' => ['event:write']
+//             ]
+//         ]
+//     ]
+// )]
 class Event
 {
     #[ORM\Id]
@@ -49,13 +49,29 @@ class Event
     #[ORM\Column(length: 255)]
     #[Assert\Length(min: 3, max: 255)]
     #[Groups(['event:read', 'event:write'])]
-    private ?string $name = null;
+    private ?string $title = null;
 
     #[Assert\NotBlank]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\Column(length: 255)]
+    #[Assert\Length(min: 3, max: 255)]
+    #[Groups(['event:read', 'event:write'])]
+    private ?string $type = null;
+
+    #[Assert\NotBlank]
+    #[Assert\Positive]
+    #[ORM\Column(type: 'float')]
+    #[Groups(['event:read', 'event:write'])]
+    private ?int $price = null;
+
+    #[ORM\Column]
+    #[Groups(['event:read', 'event:write'])]
+    private ?string $src = null;
+
+    #[ORM\JoinColumn]
+    #[Assert\NotBlank]
     #[ORM\ManyToOne(inversedBy: 'events')]
     #[Groups(['event:read', 'event:write'])]
-    private ?Room $room = null;
+    private ?Venue $venue = null;
 
     #[Assert\NotBlank]
     #[Assert\Count(min: 1)]
@@ -64,14 +80,8 @@ class Event
     #[ORM\ManyToMany(targetEntity: User::class, inversedBy: 'events')]
     private Collection $artists;
 
-    #[Assert\NotBlank]
-    #[Assert\Positive]
-    #[ORM\Column(type: "float")]
     #[Groups(['event:read', 'event:write'])]
-    private ?int $price = null;
-
-    #[Groups(['event:read', 'event:write'])]
-    #[ORM\OneToMany(mappedBy: 'event', targetEntity: Schedule::class)]
+    #[ORM\OneToMany(targetEntity: Schedule::class, mappedBy: 'event')]
     private Collection $schedules;
 
     public function __construct()
@@ -85,26 +95,62 @@ class Event
         return $this->id;
     }
 
-    public function getName(): ?string
+    public function getTitle(): ?string
     {
-        return $this->name;
+        return $this->title;
     }
 
-    public function setName(string $name): self
+    public function setTitle(string $title): self
     {
-        $this->name = $name;
+        $this->title = $title;
 
         return $this;
     }
 
-    public function getRoom(): ?Room
+    public function getType(): ?string
     {
-        return $this->room;
+        return $this->type;
     }
 
-    public function setRoom(?Room $room): self
+    public function setType(string $type): self
     {
-        $this->room = $room;
+        $this->type = $type;
+
+        return $this;
+    }
+
+    public function getPrice(): ?float
+    {
+        return $this->price;
+    }
+
+    public function setPrice(float $price): self
+    {
+        $this->price = $price;
+
+        return $this;
+    }
+
+    public function getSrc(): ?string
+    {
+        return $this->src;
+    }
+
+    public function setSrc(string $src): self
+    {
+        $this->src = $src;
+
+        return $this;
+    }
+
+    public function getVenue(): ?Venue
+    {
+        return $this->venue;
+    }
+
+    public function setVenue(?Venue $venue): self
+    {
+        $this->venue = $venue;
 
         return $this;
     }
@@ -129,18 +175,6 @@ class Event
     public function removeArtist(User $artist): self
     {
         $this->artists->removeElement($artist);
-
-        return $this;
-    }
-
-    public function getPrice(): ?float
-    {
-        return $this->price;
-    }
-
-    public function setPrice(float $price): self
-    {
-        $this->price = $price;
 
         return $this;
     }

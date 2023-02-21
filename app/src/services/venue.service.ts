@@ -13,7 +13,7 @@ const data = [
 	{ id: 8, name: 'Barclays Center', type: 'concert', seats: 17000, price: 10000, src: 'https://upload.wikimedia.org/wikipedia/commons/thumb/d/df/BarclayCenter-2_%2848034233762%29.jpg/413px-BarclayCenter-2_%2848034233762%29.jpg' }
 ]
 
-// add price for reservation
+// add price for booking
 
 class VenueService {
 	all() {
