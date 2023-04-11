@@ -23,7 +23,7 @@ export const useEventListStore = defineStore("eventList", {
   }),
 
   actions: {
-    async getItems(params: ListParams) {
+    async getItems(params?: ListParams) {
       this.setError("");
       this.toggleLoading();
 

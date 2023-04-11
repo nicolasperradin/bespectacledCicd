@@ -83,9 +83,9 @@ class PaymentController extends AbstractController
   public function successTransaction($entityManager, $amount)
   {
     $user = $this->getUser();
-    $transaction = new PaymentTransaction();
+    $transaction = new Transaction();
     $transaction->setAmount($amount);
-    $transaction->setUser($user);
+    $transaction->setBuyer($user);
     $transaction->setStatus('success');
     $transaction->setCreatedAt(new \DateTime());
 
@@ -101,9 +101,9 @@ class PaymentController extends AbstractController
   public function failedTransaction($entityManager, $amount)
   {
     $user = $this->getUser();
-    $transaction = new PaymentTransaction();
+    $transaction = new Transaction();
     $transaction->setAmount($amount);
-    $transaction->setUser($user);
+    $transaction->setBuyer($user);
     $transaction->setStatus('cancelled');
     $transaction->setCreatedAt(new \DateTime());
 

@@ -45,13 +45,18 @@ class Ticket
     #[ORM\Column]
     private ?int $id = null;
 
+    #[ORM\Column]
+    #[Groups(['ticket:read', 'ticket:write'])]
+    #[Assert\NotBlank]
+    private ?string $reference = null;
+
     #[ORM\ManyToOne(inversedBy: 'tickets')]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['ticket:read', 'ticket:write'])]
     #[Assert\NotBlank]
     private ?User $buyer = null;
 
-    #[ORM\OneToOne(cascade: ['persist', 'remove'])]
+    #[ORM\ManyToOne(inversedBy: 'tickets')]
     #[ORM\JoinColumn(nullable: false)]
     #[Groups(['ticket:read', 'ticket:write'])]
     #[Assert\NotBlank]
@@ -65,10 +70,21 @@ class Ticket
     #[ORM\ManyToOne(inversedBy: 'tickets')]
     private ?Transaction $transaction = null;
 
-
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getReference(): ?string
+    {
+        return $this->reference;
+    }
+
+    public function setReference(string $reference): self
+    {
+        $this->reference = $reference;
+
+        return $this;
     }
 
     public function getBuyer(): ?User

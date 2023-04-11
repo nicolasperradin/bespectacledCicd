@@ -5,6 +5,7 @@ import event from './event'
 
 export default {
 	home: 'Home',
+	admin: 'Admin',
 	submit: 'Submit',
 	reset: 'Reset',
 	add: 'Add',

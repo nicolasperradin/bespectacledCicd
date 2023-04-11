@@ -5,7 +5,10 @@ import stadium from '@/assets/stadium.jpeg'
 const model = ref(null)
 
 const onIntersect = {
-	handler: (b, e) => e[0].target.style.opacity = e[0].intersectionRatio,
+	handler: (b, e) => {
+		e[0].target.style.transition = 'opacity .3s ease'
+		e[0].target.style.opacity = e[0].intersectionRatio
+	},
 	options: { threshold: [0, .25, .5, .75, 1] }
 }
 </script>

@@ -14,7 +14,9 @@ const props = defineProps<{
 
 const violations = toRef(props, 'errors')
 
-const item: Ref<Event> = ref({})
+const artists = ref(null)
+const schedules = ref(null)
+const item: Ref<Event> = ref({} as Event)
 
 if (props.values) item.value = { ...props.values }
 
@@ -23,7 +25,7 @@ const emit = defineEmits<{ (e: 'submit', item: Event): void }>()
 // TODO example to use for ref declarations
 const form: Ref<VForm | null> = ref(null)
 
-function resetForm() {
+const resetForm = () => {
 	if (!form.value) return
 	form.value.reset()
 }
@@ -41,9 +43,9 @@ function resetForm() {
 					:error-messages="violations?.title"
 					:label="$t('event.title')"
 					required
-					prepend-icon="fa fa-font-case"
-					append-inner-icon="fa fa-trash"
-					@click:append-inner="item.title = undefined"
+					prepend-icon="fa fa-font text-primary"
+					append-inner-icon="fa fa-trash text-red"
+					@click:append-inner="item.title = ''"
 				/>
 			</v-col>
 
@@ -55,9 +57,9 @@ function resetForm() {
 					:error-messages="violations?.type"
 					:label="$t('event.type')"
 					required
-					prepend-icon="fa fa-folder"
-					append-inner-icon="fa fa-trash"
-					@click:append-inner="item.type = undefined"
+					prepend-icon="fa fa-folder text-orange"
+					append-inner-icon="fa fa-trash text-red"
+					@click:append-inner="item.type = ''"
 				/>
 			</v-col>
 
@@ -69,9 +71,9 @@ function resetForm() {
 					:error-messages="violations?.price"
 					:label="$t('event.price')"
 					required
-					prepend-icon="fa fa-dollar-sign"
-					append-inner-icon="fa fa-trash"
-					@click:append-inner="item.price = undefined"
+					prepend-icon="fa fa-dollar-sign text-yellow"
+					append-inner-icon="fa fa-trash text-red"
+					@click:append-inner="item.price = 0"
 				/>
 			</v-col>
 
@@ -83,39 +85,69 @@ function resetForm() {
 					:error-messages="violations?.src"
 					:label="$t('event.src')"
 					required
-					prepend-icon="fa fa-image"
-					append-inner-icon="fa fa-trash"
+					prepend-icon="fa fa-image text-blue"
+					append-inner-icon="fa fa-trash text-red"
 					@click:append-inner="item.src = undefined"
 				/>
 			</v-col>
 
-			<v-col cols="12" sm="6" md="6">
-				<!-- TODO use v-autocomplete instead -->
-				<v-text-field
+			<!-- TODO add :items="venues" -->
+			<v-col cols="12">
+				<v-autocomplete
 					v-model="item.venue"
 					:error="Boolean(violations?.venue)"
 					:error-messages="violations?.venue"
 					:label="$t('event.venue')"
+					:items="[item.venue]"
 					required
-					append-inner-icon="fa fa-trash"
-					@click:append-inner="item.venue = undefined"
+					item-title="name"
+					item-value="@id"
+					prepend-icon="fa fa-location-dot text-green"
+					append-icon="fa fa-plus-circle text-success"
+					@click:append="$router.push({ name: 'VenueCreate' })"
 				/>
 			</v-col>
 
+			<!-- TODO add :items="artists" -->
 			<v-col cols="12">
-				<!-- TODO use v-autocomplete in the FormRepeater instead -->
-				<FormRepeater :values="item.artists" :label="$t('event.artists')" @update="(values: any) => item.artists = values" />
+				<v-autocomplete
+					v-model="item.artists"
+					:error="Boolean(violations?.artists)"
+					:error-messages="violations?.artists"
+					:label="$t('event.artists')"
+					:items="item.artists"
+					required
+					multiple
+					chips
+					clearable
+					item-title="username"
+					item-value="@id"
+					prepend-icon="fa fa-users text-pink"
+					append-icon="fa fa-plus-circle text-success"
+					@click:append="$router.push({ name: 'VenueCreate' })"
+				/>
 			</v-col>
 
-			<!-- TODO sme as artists? -->
-			<v-col cols="12" sm="6" md="6">
-				<v-text-field
+			<!-- <v-col cols="12">
+				<FormRepeater :values="item.artists" :label="$t('event.artists')" @update="(values: any) => item.artists = values" />
+			</v-col> -->
+
+			<!-- TODO same as artists? -->
+			<v-col cols="12">
+				<v-autocomplete
 					v-model="item.schedules"
 					:error="Boolean(violations?.schedules)"
 					:error-messages="violations?.schedules"
 					:label="$t('event.schedules')"
-					append-inner-icon="fa fa-trash"
-					@click:append-inner="item.schedules = undefined"
+					:items="item.schedules"
+					multiple
+					chips
+					clearable
+					item-title="date"
+					item-value="@id"
+					prepend-icon="fa fa-clock"
+					append-icon="fa fa-plus-circle text-success"
+					@click:append="$router.push({ name: 'VenueCreate' })"
 				/>
 			</v-col>
 		</v-row>

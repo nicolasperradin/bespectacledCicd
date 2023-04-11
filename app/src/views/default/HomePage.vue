@@ -8,14 +8,17 @@ const slides = [
 ]
 
 const onIntersect = {
-	handler: (b, e) => e[0].target.style.opacity = e[0].intersectionRatio,
+	handler: (b, e) => {
+		e[0].target.style.transition = 'opacity .3s ease'
+		e[0].target.style.opacity = e[0].intersectionRatio
+	},
 	options: { threshold: [0, .25, .5, .75, 1] }
 }
 </script>
 
 <template>
 	<v-carousel color="secondary" cycle hide-delimiter-background progress="primary" show-arrows="hover">
-		<v-carousel-item v-for="(slide, i) in slides" :key="i" :src="slide">
+		<v-carousel-item v-for="(slide, i) in slides" :key="i" :src="slide" cover>
 			<v-sheet color="transparent" class="d-flex flex-column fill-height justify-center align-center text-white">
 				<div :class="[`text-${i === 5 ? 'black' : 'white'}-50`, 'blend text-h1 font-weight-thin mb-4']">BeSpectacled</div>
 				<div class="blend text-h4">Book tickets for events, concerts, and more!</div>

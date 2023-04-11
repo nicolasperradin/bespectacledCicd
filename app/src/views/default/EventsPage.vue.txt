@@ -6,16 +6,17 @@ import { useRouter } from 'vue-router'
 
 import type { Event } from '@/types/event'
 import type { VuetifyOrder } from '@/types/list'
-import Toolbar from '@/components/common/Toolbar.vue'
 import { useEventListStore } from '@/store/event/list'
 import { useBreadcrumb } from '@/composables/breadcrumb'
 import { useMercureList } from '@/composables/mercureList'
 import { useEventDeleteStore } from '@/store/event/delete'
 import ActionCell from '@/components/common/ActionCell.vue'
 
+const parallax = new URL('@/assets/stadium.jpeg', import.meta.url).href
+
 const { t } = useI18n()
 const router = useRouter()
-const breadcrumb = useBreadcrumb()
+const breadcrumb = [{ title: t('home'), to: '/' }, ...useBreadcrumb()]
 
 const eventDeleteStore = useEventDeleteStore()
 const { deleted, mercureDeleted } = storeToRefs(eventDeleteStore)
@@ -60,19 +61,26 @@ const updateOrder = (newOrders: VuetifyOrder[]) => {
 }
 
 const goToShowPage = (item: Event) => router.push({ name: 'EventShow', params: { id: item['@id'] } })
-const goToCreatePage = () => router.push({ name: 'EventCreate' })
-const goToUpdatePage = (item: Event) => router.push({ name: 'EventUpdate', params: { id: item['@id'] } })
-
-const deleteItem = async (item: Event) => {
-	await eventDeleteStore.deleteItem(item)
-	sendRequest()
-}
 
 onBeforeUnmount(() => eventDeleteStore.$reset())
 </script>
 
 <template>
-	<Toolbar :actions="['add']" :breadcrumb="breadcrumb" :is-loading="isLoading" @add="goToCreatePage" />
+	<v-parallax :src="parallax">
+		<div class="d-flex flex-column fill-height justify-center align-center">
+			<v-breadcrumbs :items="breadcrumb" />
+			<div class="text-h2 font-weight-thin mb-4">BeSpectacled Events</div>
+			<div class="text-h4 text-secondary">Discover our events</div>
+
+			<v-btn
+				color="primary"
+				prepend-icon="fa fa-fade fa-computer-mouse"
+				append-icon="fa fa-bounce fa-arrow-down"
+				size="x-large"
+				v-scroll-to="'.v-sheet'"
+			/>
+		</div>
+	</v-parallax>
 
 	<v-container fluid>
 		<v-alert v-if="deleted" type="success" class="mb-4" v-text="$t('itemDeleted', [deleted['@id']])" closable />
@@ -89,7 +97,7 @@ onBeforeUnmount(() => eventDeleteStore.$reset())
 			@update:sortBy="updateOrder"
 		>
 			<template #item.actions="{ item }">
-				<ActionCell :actions="['show', 'update', 'delete']" @show="goToShowPage(item.raw)" @update="goToUpdatePage(item.raw)" @delete="deleteItem(item.raw)" />
+				<ActionCell :actions="['show']" @show="goToShowPage(item.raw)" />
 			</template>
 
 			<!-- <template #item.@id="{ item }">
@@ -166,3 +174,15 @@ onBeforeUnmount(() => eventDeleteStore.$reset())
 		</v-data-table-server>
 	</v-container>
 </template>
+
+<style scoped>
+.v-parallax {
+	height: calc(100vh - (48px + 16px * 2)) !important;
+	margin-bottom: 16px;
+}
+
+.v-parallax .v-btn {
+	position: absolute;
+	bottom: 16px;
+}
+</style>

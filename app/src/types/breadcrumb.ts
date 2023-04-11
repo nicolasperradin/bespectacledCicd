@@ -1,3 +1,3 @@
 export interface BreadcrumbValue {
-  name: string;
+	name: string
 }

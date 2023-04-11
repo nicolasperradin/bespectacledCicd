@@ -2,53 +2,50 @@
 
 namespace App\Entity;
 
-use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 use App\Repository\EventRepository;
-use Doctrine\Common\Collections\Collection;
 use ApiPlatform\Metadata\ApiResource;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: EventRepository::class)]
-// #[ApiResource(
-//     collectionOperations: [
+#[UniqueEntity(fields: 'title', message: 'This event already exists.')]
+#[ApiResource(
+    normalizationContext: ['groups' => ['event:read']],
+    denormalizationContext: ['groups' => ['event:write']],
+//     operations: [
 //         'get' => [
-//             'normalization_context' => [
-//                 'groups' => ['event:read']
-//             ]
+//             'normalization_context' => ['groups' => ['event:read']]
 //         ],
 //         'post' => [
-//             'denormalization_context' => [
-//                 'groups' => ['event:write']
-//             ]
+//             'denormalization_context' => [groups' => ['event:write']]
 //         ]
 //     ],
 //     itemOperations: [
 //         'get' => [
-//             'normalization_context' => [
-//                 'groups' => ['event:read']
-//             ]
+//             'normalization_context' => ['groups' => ['event:read']]
 //         ],
 //         'put' => [
-//             'denormalization_context' => [
-//                 'groups' => ['event:write']
-//             ]
+//             'denormalization_context' => ['groups' => ['event:write']]
+//         ],
+//         'delete' => [
+//             'denormalization_context' => ['groups' => ['event:write']]
 //         ]
 //     ]
-// )]
+)]
 class Event
 {
-    #[ORM\Id]
-    #[ORM\Column]
-    #[ORM\GeneratedValue]
+    #[ORM\Id, ORM\Column, ORM\GeneratedValue]
+    #[Groups(['event:read'])]
     private ?int $id = null;
 
+    #[ORM\Column]
     #[Assert\NotBlank]
-    #[ORM\Column(length: 255)]
     #[Assert\Length(min: 3, max: 255)]
-    #[Groups(['event:read', 'event:write'])]
+    #[Groups(['event:read', 'event:write', 'schedule:read'])]
     private ?string $title = null;
 
     #[Assert\NotBlank]
@@ -84,10 +81,15 @@ class Event
     #[ORM\OneToMany(targetEntity: Schedule::class, mappedBy: 'event')]
     private Collection $schedules;
 
+    // #[Groups(['event:read', 'event:write'])]
+    #[ORM\OneToMany(mappedBy: 'event', targetEntity: Ticket::class)]
+    private Collection $tickets;
+
     public function __construct()
     {
         $this->artists = new ArrayCollection();
         $this->schedules = new ArrayCollection();
+        $this->tickets = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -203,6 +205,36 @@ class Event
             // set the owning side to null (unless already changed)
             if ($schedule->getEvent() === $this) {
                 $schedule->setEvent(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Ticket>
+     */
+    public function getTickets(): Collection
+    {
+        return $this->tickets;
+    }
+
+    public function addTicket(Ticket $ticket): self
+    {
+        if (!$this->tickets->contains($ticket)) {
+            $this->tickets->add($ticket);
+            $ticket->setEvent($this);
+        }
+
+        return $this;
+    }
+
+    public function removeTicket(Ticket $ticket): self
+    {
+        if ($this->tickets->removeElement($ticket)) {
+            // set the owning side to null (unless already changed)
+            if ($ticket->getEvent() === $this) {
+                $ticket->setEvent(null);
             }
         }
 

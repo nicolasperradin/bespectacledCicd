@@ -2,6 +2,7 @@
 import { ref, type Ref } from 'vue'
 
 const props = defineProps<{
+	type?: string
 	values?: string[]
 	label: string
 }>()
@@ -42,6 +43,7 @@ const emitUpdate = () => emit('update', fields.value.filter((review) => review.l
 				v-for="(field, i) in fields"
 				:key="i"
 				v-model="fields[i]"
+				:type="type"
 				@update:model-value="(value: string) => updateField(i, value)"
 				append-inner-icon="fa fa-trash"
 				@click:append-inner="removeField(i)"

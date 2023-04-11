@@ -10,21 +10,6 @@ const onIntersect = {
 </script>
 
 <template>
-	<v-parallax :src="image">
-		<div class="d-flex flex-column fill-height justify-center align-center text-white">
-			<h1 class="text-primary text-h1 font-weight-thin mb-4">W. I. P.</h1>
-			<h4 class="text-amber">Please check back later as this page is still under construction.</h4>
-
-			<v-btn
-				color="primary"
-				prepend-icon="fa fa-fade fa-arrow-left"
-				append-icon="fa fa-bounce fa-home"
-				size="x-large"
-				@click="() => $router.push({ name: 'home' })"
-			/>
-		</div>
-	</v-parallax>
-
 	<v-row>
 		<v-col v-for="n in 24" :key="n" cols="4">
 			<v-card height="200" v-intersect="onIntersect" />

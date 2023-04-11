@@ -8,13 +8,13 @@ use App\Email\Mailer;
 use App\Security\TokenGenerator;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\Persistence\ManagerRegistry;
-use ApiPlatform\Core\DataPersister\ContextAwareDataPersisterInterface;
+// use ApiPlatform\Core\DataPersister\ContextAwareDataPersisterInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 /**
  *
  */
-class UserDataPersister implements ContextAwareDataPersisterInterface
+class UserDataPersister /* implements ContextAwareDataPersisterInterface */
 {
 	public function __construct(
 		private Mailer $mailer,

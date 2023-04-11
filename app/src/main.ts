@@ -1,5 +1,6 @@
 import { createApp } from 'vue'
 import VCalendar from 'v-calendar'
+// import { StripePlugin } from '@vue-stripe/vue-stripe';
 
 import 'bootstrap'
 import 'v-calendar/dist/style.css'

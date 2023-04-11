@@ -2,21 +2,21 @@
 
 namespace App\Entity;
 
-use ApiPlatform\Metadata\ApiResource;
-use App\Repository\VenueRepository;
-use Doctrine\Common\Collections\ArrayCollection;
-use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
-use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use App\Repository\VenueRepository;
+use ApiPlatform\Metadata\ApiResource;
+use Doctrine\Common\Collections\Collection;
+use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: VenueRepository::class)]
-#[UniqueEntity(fields: ["name"], message: "This venue already exists")]
-// #[ApiResource(
-//     normalizationContext: ['groups' => ['venue:read']],
-//     denormalizationContext: ['groups' => ['venue:write']],
-//     collectionOperations: [
+#[UniqueEntity(fields: 'name', message: 'This venue already exists.')]
+#[ApiResource(
+    normalizationContext: ['groups' => ['venue:read']],
+    denormalizationContext: ['groups' => ['venue:write']],
+    // operations: [
 //         'get' => [
 //             'normalization_context' => ['groups' => ['venue:read']]
 //         ],
@@ -35,20 +35,20 @@ use Symfony\Component\Validator\Constraints as Assert;
 //             'denormalization_context' => ['groups' => ['venue:write']]
 //         ]
 //     ]
-// )]
+)]
 class Venue
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Id, ORM\Column, ORM\GeneratedValue]
+    #[Groups(['venue:read'])]
     private ?int $id = null;
 
-    #[ORM\Column(type: "string", length: 55)]
+    #[ORM\Column]
     #[Assert\NotBlank]
-    #[Groups(['venue:read', 'venue:write'])]
+    #[Assert\Length(min: 3, max: 255)]
+    #[Groups(['venue:read', 'venue:write', 'event:read'])]
     private ?string $name = null;
 
-    #[ORM\Column(type: "string", length: 55)]
+    #[ORM\Column]
     #[Assert\NotBlank]
     #[Groups(['venue:read', 'venue:write'])]
     private ?string $type = null;
@@ -59,17 +59,16 @@ class Venue
     private ?int $seats = null;
 
     #[ORM\Column]
-    #[Assert\NotBlank]
-    #[Assert\Positive]
+    #[Assert\NotBlank, Assert\Positive]
     #[Groups(['venue:read', 'venue:write'])]
     private ?float $price = null;
 
     #[ORM\Column]
-    #[Groups(['event:read', 'event:write'])]
+    #[Groups(['venue:read', 'venue:write', 'event:read'])]
     private ?string $src = null;
 
-    #[ORM\OneToMany(mappedBy: 'venue', targetEntity: Event::class)]
     #[Groups(['venue:read'])]
+    #[ORM\OneToMany(mappedBy: 'venue', targetEntity: Event::class)]
     private Collection $events;
 
     public function __construct()

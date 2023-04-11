@@ -1,33 +1,75 @@
-@baseUrl = http://localhost/api
+@host = https://localhost:80
+@baseUrl = {{host}}/api
 @email = "root1@root.com"
 @password = "password"
 
 ### Login
 # @name login
 POST {{baseUrl}}/login
+accept: application/json
 Content-Type: application/json
 
 {
-    "email": {{email}},
-    "password": {{password}}
+	"email": {{email}},
+	"password": {{password}}
 }
 ###
 
-@code = {{login.response.body.code}}
-@message = {{login.response.body.message}}
-@token = {{login.response.headers.X-Debug-Token}}
-# @token = {{login.response.body.token}}
+@token = {{login.response.body.token}}
+@refresh_token = {{login.response.body.refresh_token}}
 
-### Get collection: users
+### Refresh token
+# @name refresh
+GET {{host}}/refresh-token
+accept: application/json
+###
+
+### Get users
 GET {{baseUrl}}/users
+accept: application/ld+json
 Authorization: Bearer {{token}}
 
-### Same with pagination
-GET {{baseUrl}}/users?page=1
+### Get artists
+GET {{baseUrl}}/users?roles[]=ROLE_ARTIST
+accept: application/ld+json
+Authorization: Bearer {{token}}
+
+### Create user
+POST {{baseUrl}}/users
+Content-Type: application/json
+
+{
+	"username": "test",
+	"email": "root{{$randomInt 1 100}}@root.com",
+	"password": "Password1",
+	"confirmPassword": "tests"
+}
+
+### Get current user
+GET {{baseUrl}}/users/me
+accept: application/ld+json
 Authorization: Bearer {{token}}
 ###
 
-### Get item: user
+### Get user
 GET {{baseUrl}}/users/1
+accept: application/ld+json
 Authorization: Bearer {{token}}
-###
+
+#########
+
+### Get events
+GET {{baseUrl}}/events
+accept: application/ld+json
+
+#########
+
+### Get venues
+GET {{baseUrl}}/venues
+accept: application/ld+json
+
+#########
+
+### Get schedules
+GET {{baseUrl}}/schedules
+accept: application/ld+json

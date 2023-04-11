@@ -10,8 +10,10 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: ScheduleRepository::class)]
-// #[ApiResource(
-//     collectionOperations: [
+#[ApiResource(
+    normalizationContext: ['groups' => ['schedule:read']],
+    denormalizationContext: ['groups' => ['schedule:write']],
+//     operations: [
 //         'get' => [
 //             'normalization_context' => [
 //                 'groups' => ['schedule:read']
@@ -35,12 +37,10 @@ use Symfony\Component\Validator\Constraints as Assert;
 //             ]
 //         ]
 //     ]
-// )]
+)]
 class Schedule
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Id, ORM\Column, ORM\GeneratedValue]
     private ?int $id = null;
 
     #[ORM\ManyToOne(inversedBy: 'schedules')]
@@ -48,12 +48,12 @@ class Schedule
     private ?Event $event = null;
 
     #[ORM\Column]
-    #[Groups(['schedule:read', 'schedule:write'])]
+    #[Groups(['schedule:read', 'schedule:write', 'event:read'])]
     private ?string $date = null;
 
-    #[ORM\Column(type: Types::JSON)]
-    #[Groups(['schedule:read', 'schedule:write'])]
     #[Assert\NotBlank]
+    #[ORM\Column(type: Types::JSON)]
+    #[Groups(['schedule:read', 'schedule:write', 'event:read'])]
     private array $times = [];
 
     public function getId(): ?int

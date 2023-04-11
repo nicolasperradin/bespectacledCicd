@@ -199,7 +199,7 @@ const randomColor = title => {
 
 					<v-window v-model="tab">
 						<v-window-item v-for="attr in attributes" :key="attr.key" :value="attr.customData.event.id">
-							<v-card flat :title="attr.customData.event.title" :subtitle="`Min. ${attr.customData.event.price} per seat`" :append-avatar="attr.customData.event.src">
+							<v-card flat :title="attr.customData.event.title" :subtitle="`Min. $${attr.customData.event.price} per seat`" :append-avatar="attr.customData.event.src">
 								<v-card-text v-if="attr.customData.day.times.length > 0">
 									<div class="text-overline">Starting {{ attr.customData.day.times.length > 1 ? 'Times' : 'Time' }}</div>
 
@@ -219,7 +219,7 @@ const randomColor = title => {
 
 											<v-card width="max-content">
 												<v-list bg-color="black">
-													<v-list-item :title="time" :subtitle="format(day.date, 'WWWW, MMMM D, YYYY')">
+													<v-list-item :title="time" :subtitle="format(day.date, 'WWWW, MMMM D, YYYY')" prepend-icon="fa fa-clock">
 														<template v-slot:append>
 															<v-list-item-action>
 																<v-btn icon="fa fa-times-circle" variant="text" @click="menus[attr.customData.day.id][i] = false" />
