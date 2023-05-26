@@ -8,6 +8,8 @@ import EventService from '@/services/event.service'
 import VenueService from '@/services/venue.service'
 import { useAuthStore, useThemeStore } from '@/store'
 
+import StripeCheckout from '@/components/common/StripeCheckout.vue'
+
 const $theme = useTheme()
 const $router = useRouter()
 const $store = useAuthStore()
@@ -70,6 +72,7 @@ const resendVerificationEmail = () => {
 				<v-dialog scrollable>
 					<template v-slot:activator="{ props }">
 						<v-btn prepend-icon="fa fa-search" v-bind="props">Search</v-btn>
+						<stripeCheckout />
 					</template>
 
 					<template v-slot:default="{ isActive }">

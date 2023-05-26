@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Show from "@/components/user/UserShow.vue";
+//import Show from "@/components/user/UserShow.vue";
 </script>
 
 <template>

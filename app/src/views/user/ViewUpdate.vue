@@ -7,5 +7,5 @@
 </template>
 
 <script setup lang="ts">
-import Update from "@/components/user/UserUpdate.vue";
+//import Update from "@/components/user/UserUpdate.vue";
 </script>

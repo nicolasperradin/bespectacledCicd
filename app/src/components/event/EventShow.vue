@@ -74,7 +74,7 @@ onBeforeUnmount(() => eventShowStore.$reset())
 							<td><v-img :src="item.src" max-width="100" max-height="100" /></td>
 							<!-- <td>{{ item.src }}</td> -->
 						</tr>
-	
+
 						<tr>
 							<td>{{ $t('event.title') }}</td>
 							<td>{{ item.title }}</td>
@@ -94,7 +94,8 @@ onBeforeUnmount(() => eventShowStore.$reset())
 							<td>{{ $t('event.venue') }}</td>
 
 							<td>
-								<router-link v-if="router.hasRoute('VenueShow')" :to="{ name: 'VenueShow', params: { id: item.venue } }">
+								<router-link v-if="router.hasRoute('VenueShow')"
+									:to="{ name: 'VenueShow', params: { id: item.venue } }">
 									<v-img :src="item.venue.src" max-width="100" max-height="100" />
 								</router-link>
 
@@ -109,14 +110,16 @@ onBeforeUnmount(() => eventShowStore.$reset())
 
 							<td>
 								<template v-if="router.hasRoute('UserShow')">
-									<router-link v-for="artist in item.artists" :key="artist" :to="{ name: 'UserShow', params: { id: artist } }">
+									<router-link v-for="artist in item.artists" :key="artist"
+										:to="{ name: 'UserShow', params: { id: artist } }">
 										<v-chip color="primary" v-text="artist.username" />
 										<br />
 									</router-link>
 								</template>
 
 								<template v-else>
-									<v-chip v-for="artist in item.artists" :key="artist" color="primary" v-text="artist.username" />
+									<v-chip v-for="artist in item.artists" :key="artist" color="primary"
+										v-text="artist.username" />
 								</template>
 							</td>
 						</tr>
@@ -129,14 +132,15 @@ onBeforeUnmount(() => eventShowStore.$reset())
 
 							<td>
 								<template v-if="router.hasRoute('ScheduleShow')">
-									<router-link v-for="schedule in item.schedules" :key="schedule" :to="{ name: 'ScheduleShow', params: { id: schedule } }">
+									<router-link v-for="schedule in item.schedules" :key="schedule"
+										:to="{ name: 'ScheduleShow', params: { id: schedule } }">
 										<v-chip color="primary" v-text="schedule.date" />
 										<br />
 									</router-link>
 								</template>
 
 								<template v-else>
-									<v-chip v-for="schedule in item.schedules" :key="schedule" color="primary" v-text="schedule.date" />
+									<!--	<v-chip v-for="schedule in item.schedules" :key="schedule" color="primary" v-text="schedule.date" />-->
 								</template>
 							</td>
 						</tr>
@@ -158,5 +162,4 @@ onBeforeUnmount(() => eventShowStore.$reset())
 		</v-window>
 	</v-container>
 
-	<Loading :visible="isLoading" />
-</template>
+<Loading :visible="isLoading" /></template>
