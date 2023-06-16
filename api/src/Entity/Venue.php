@@ -39,7 +39,7 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 class Venue
 {
     #[ORM\Id, ORM\Column, ORM\GeneratedValue]
-    #[Groups(['venue:read'])]
+    #[Groups(['venue:read', 'event:read'])]
     private ?int $id = null;
 
     #[ORM\Column]

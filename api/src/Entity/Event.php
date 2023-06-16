@@ -15,37 +15,18 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 #[UniqueEntity(fields: 'title', message: 'This event already exists.')]
 #[ApiResource(
     normalizationContext: ['groups' => ['event:read']],
-    denormalizationContext: ['groups' => ['event:write']],
-//     operations: [
-//         'get' => [
-//             'normalization_context' => ['groups' => ['event:read']]
-//         ],
-//         'post' => [
-//             'denormalization_context' => [groups' => ['event:write']]
-//         ]
-//     ],
-//     itemOperations: [
-//         'get' => [
-//             'normalization_context' => ['groups' => ['event:read']]
-//         ],
-//         'put' => [
-//             'denormalization_context' => ['groups' => ['event:write']]
-//         ],
-//         'delete' => [
-//             'denormalization_context' => ['groups' => ['event:write']]
-//         ]
-//     ]
+    denormalizationContext: ['groups' => ['event:write']]
 )]
 class Event
 {
     #[ORM\Id, ORM\Column, ORM\GeneratedValue]
-    #[Groups(['event:read'])]
+    #[Groups(['event:read', 'venue:read'])]
     private ?int $id = null;
 
     #[ORM\Column]
     #[Assert\NotBlank]
     #[Assert\Length(min: 3, max: 255)]
-    #[Groups(['event:read', 'event:write', 'schedule:read'])]
+    #[Groups(['event:read', 'event:write', 'venue:read', 'user:read', 'schedule:read'])]
     private ?string $title = null;
 
     #[Assert\NotBlank]

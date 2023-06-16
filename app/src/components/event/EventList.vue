@@ -4,14 +4,16 @@ import { useI18n } from 'vue-i18n'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 
+import type { User } from '@/types/user'
 import type { Event } from '@/types/event'
 import type { VuetifyOrder } from '@/types/list'
 import Toolbar from '@/components/common/Toolbar.vue'
-import { useEventListStore } from '@/store/event/list'
+// import { useEventListStore } from '@/store/event/list'
 import { useBreadcrumb } from '@/composables/breadcrumb'
 import { useMercureList } from '@/composables/mercureList'
-import { useEventDeleteStore } from '@/store/event/delete'
+// import { useEventDeleteStore } from '@/store/event/delete'
 import ActionCell from '@/components/common/ActionCell.vue'
+import { useEventDeleteStore, useEventListStore } from '@/store/event'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -26,7 +28,7 @@ const { items, totalItems, error, isLoading } = storeToRefs(eventListStore)
 const page = ref('1')
 const order = ref({})
 
-const icons: { [key: string]: string } = {
+const icons: Record<string, string> = {
 	broadway: 'fa fa-mask',
 	concert: 'fa fa-microphone',
 	other: 'fa fa-question'
@@ -45,7 +47,7 @@ const headers = [
 	{ title: t('event.price'), key: 'price', sortable: false },
 	{ title: t('event.venue'), key: 'venue', sortable: false },
 	{ title: t('event.artists'), key: 'artists', sortable: false },
-	{ title: t('event.schedules'), key: 'schedules', sortable: false },
+	{ title: t('event.schedules'), key: 'schedules', sortable: false }
 ]
 
 const updatePage = (newPage: string) => {
@@ -59,9 +61,9 @@ const updateOrder = (newOrders: VuetifyOrder[]) => {
 	sendRequest()
 }
 
-const goToShowPage = (item: Event) => router.push({ name: 'EventShow', params: { id: item['@id'] } })
+const goToShowPage = (item: Event) => router.push({ name: 'EventShow', params: { id: item.id } })
 const goToCreatePage = () => router.push({ name: 'EventCreate' })
-const goToUpdatePage = (item: Event) => router.push({ name: 'EventUpdate', params: { id: item['@id'] } })
+const goToUpdatePage = (item: Event) => router.push({ name: 'EventUpdate', params: { id: item.id } })
 
 const deleteItem = async (item: Event) => {
 	await eventDeleteStore.deleteItem(item)
@@ -100,7 +102,7 @@ onBeforeUnmount(() => eventDeleteStore.$reset())
 
 			<template #item.src="{ item }">
 				<v-tooltip :text="item.raw.title">
-					<template v-slot:activator="{ props }">
+					<template #activator="{ props }">
 						<router-link v-bind="props" :to="{ name: 'EventShow', params: { id: item.raw['@id'] } }">
 							<v-img :src="item.raw.src" max-width="100" max-height="100" />
 						</router-link>
@@ -110,7 +112,7 @@ onBeforeUnmount(() => eventDeleteStore.$reset())
 
 			<template #item.type="{ item }">
 				<v-tooltip :text="item.raw.type">
-					<template v-slot:activator="{ props }">
+					<template #activator="{ props }">
 						<v-icon v-bind="props" :icon="icons[item.raw.type]" />
 					</template>
 				</v-tooltip>
@@ -122,8 +124,8 @@ onBeforeUnmount(() => eventDeleteStore.$reset())
 
 			<template #item.venue="{ item }">
 				<v-tooltip :text="item.raw.venue.name">
-					<template v-slot:activator="{ props }">
-						<router-link v-bind="props" v-if="router.hasRoute('VenueShow')" :to="{ name: 'VenueShow', params: { id: item.raw.venue } }">
+					<template #activator="{ props }">
+						<router-link v-bind="props" v-if="router.hasRoute('VenueShow')" :to="{ name: 'VenueShow', params: { id: item.raw.venue.id } }">
 							<v-img :src="item.raw.venue.src" max-width="100" max-height="100" />
 						</router-link>
 
@@ -137,14 +139,16 @@ onBeforeUnmount(() => eventDeleteStore.$reset())
 			<!-- TODO v-text 3 above and 2 below -->
 
 			<template #item.artists="{ item }">
-				<v-tooltip v-for="artist in item.raw.artists" :text="artist.username">
-					<template v-slot:activator="{ props }">
+				<v-tooltip v-for="artist in item.raw.artists" :text="item.raw.artists.map((a: User) => a.username).join(' | ')">
+					<template #activator="{ props }">
 						<template v-if="router.hasRoute('UserShow')">
 							<router-link :key="artist" :to="{ name: 'UserShow', params: { id: artist } }" v-text="artist" />
 						</template>
 
 						<template v-else>
-							<v-icon v-bind="props" icon="fa fa-user" />
+							<v-badge :content="item.raw.artists.length" color="error">
+								<v-icon v-bind="props" icon="fa fa-user" />
+							</v-badge>
 						</template>
 					</template>
 				</v-tooltip>
@@ -152,13 +156,15 @@ onBeforeUnmount(() => eventDeleteStore.$reset())
 
 			<template #item.schedules="{ item }">
 				<v-tooltip v-for="day in item.raw.schedules" :text="`${day.date} (${day.times.length})`">
-					<template v-slot:activator="{ props }">
+					<template #activator="{ props }">
 						<template v-if="router.hasRoute('ScheduleShow')">
 							<router-link :key="day" :to="{ name: 'ScheduleShow', params: { id: day } }" v-text="day" />
 						</template>
 
 						<template v-else>
-							<v-icon v-bind="props" icon="fa fa-clock" />
+							<v-badge :content="item.raw.schedules.length" color="error">
+								<v-icon v-bind="props" icon="fa fa-clock" />
+							</v-badge>
 						</template>
 					</template>
 				</v-tooltip>

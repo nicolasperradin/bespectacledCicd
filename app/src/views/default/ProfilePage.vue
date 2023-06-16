@@ -95,7 +95,7 @@ watch(dialog, dialog => console.log('dialog', dialog))
 
 		<v-card-actions>
 			<v-dialog v-model="dialog.state" :scrim="false" persistent>
-      			<template v-slot:activator="{ props }">
+      			<template #activator="{ props }">
 					<v-btn color="red" v-bind="props">Reset Password</v-btn>
 				</template>
 

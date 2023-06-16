@@ -5,37 +5,30 @@ import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 
 import type { Event } from '@/types/event'
-import type { VuetifyOrder } from '@/types/list'
 import { useEventListStore } from '@/store/event/list'
-import { useBreadcrumb } from '@/composables/breadcrumb'
+import EventCard from '@/components/custom/EventCard.vue'
 import { useMercureList } from '@/composables/mercureList'
 import { useEventDeleteStore } from '@/store/event/delete'
-import ActionCell from '@/components/common/ActionCell.vue'
-
-// import EventService from '@/services/event.service'
-// import VenueService from '@/services/venue.service'
-import EventCard from '@/components/custom/EventCard.vue'
+import DataIterator from '@/components/custom/DataIterator.vue'
 
 const parallax = new URL('@/assets/stadium.jpeg', import.meta.url).href
 
 const { t } = useI18n()
-const router = useRouter()
-const breadcrumb = [{ title: t('home'), to: '/' }, ...useBreadcrumb()]
+const $router = useRouter()
 
-const eventDeleteStore = useEventDeleteStore()
-const { deleted, mercureDeleted } = storeToRefs(eventDeleteStore)
+const deleteStore = useEventDeleteStore()
+const { deleted, mercureDeleted } = storeToRefs(deleteStore)
 
-const eventListStore = useEventListStore()
-const { items, totalItems, error, isLoading } = storeToRefs(eventListStore)
+const store = useEventListStore()
+const { items, totalItems, error, isLoading } = storeToRefs(store)
 
 const page = ref('1')
 const order = ref({})
-const menus = ref([])
-const events = ref([])
+const keys = ['Title', 'Type', 'Price', 'Artists', 'Schedules']
 
-const sendRequest = async () => await eventListStore.getItems({ page: page.value, order: order.value })
+const sendRequest = async () => await store.getItems({ page: page.value, order: order.value })
 
-useMercureList({ store: eventListStore, deleteStore: eventDeleteStore })
+useMercureList({ store, deleteStore })
 
 sendRequest().then(() => {
 	items.value.map((event: Event) => {
@@ -44,69 +37,51 @@ sendRequest().then(() => {
 		.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 	})
 
-	const eventsWithoutSchedules = items.value.filter(event => event.schedules.length === 0)
 	const eventsWithSchedules = items.value.filter(event => event.schedules.length > 0)
+	const eventsWithoutSchedules = items.value.filter(event => event.schedules.length === 0)
 
 	items.value = [...eventsWithSchedules, ...eventsWithoutSchedules]
 })
 
-const headers = [
-	{ title: t('actions'), key: 'actions', sortable: false },
-	{ title: t('event.src'), key: 'src', sortable: false },
-	{ title: t('event.type'), key: 'type', sortable: false },
-	{ title: t('event.price'), key: 'price', sortable: false },
-	{ title: t('event.venue'), key: 'venue', sortable: false },
-	{ title: t('event.artists'), key: 'artists', sortable: false },
-	{ title: t('event.schedules'), key: 'schedules', sortable: false },
-]
+// const updatePage = (newPage: string) => {
+// 	page.value = newPage
+// 	sendRequest()
+// }
 
-const updatePage = (newPage: string) => {
-	page.value = newPage
-	sendRequest()
-}
+// const updateOrder = (newOrders: VuetifyOrder[]) => {
+// 	const newOrder = newOrders[0]
+// 	order.value = { [newOrder.key]: newOrder.order }
+// 	sendRequest()
+// }
 
-const updateOrder = (newOrders: VuetifyOrder[]) => {
-	const newOrder = newOrders[0]
-	order.value = { [newOrder.key]: newOrder.order }
-	sendRequest()
-}
+// const goToShowPage = (item: Event) => $router.push({ name: 'EventShow', params: { id: item.id } })
 
-const goToShowPage = (item: Event) => router.push({ name: 'EventShow', params: { id: item.id } })
-
-onBeforeUnmount(() => eventDeleteStore.$reset())
-
-const onIntersect = {
-	handler: (b: any, e: any) => {
-		e[0].target.style.transition = 'opacity .3s ease'
-		e[0].target.style.opacity = e[0].intersectionRatio * 2
-	},
-	options: { threshold: [0, .25, .5, .75, 1] }
-}
+onBeforeUnmount(() => deleteStore.$reset())
 </script>
 
 <template>
-	<v-progress-linear :active="isLoading" color="deep-purple" height="4" indeterminate />
+	<v-progress-linear :active="isLoading" color="white" height="4" indeterminate />
 
-	<v-parallax :src="parallax">
+	<v-parallax class="snap" :src="parallax">
 		<div class="d-flex flex-column fill-height justify-center align-center">
-			<div class="text-h2 font-weight-thin mb-4">BeSpectacled Events</div>
-			<div class="text-h4 text-secondary">Discover our events</div>
+			<div class="text-h2 font-weight-thin mb-4">Find your next event</div>
+			<div class="text-h4 text-secondary">From concerts to broadway shows, there's an event for you.</div>
 
 			<v-btn
 				color="primary"
 				prepend-icon="fa fa-fade fa-computer-mouse"
 				append-icon="fa fa-bounce fa-arrow-down"
 				size="x-large"
-				v-scroll-to="'.v-row'"
+				v-scroll-to="'.v-data-iterator'"
 			/>
 		</div>
 	</v-parallax>
 
-	<v-row justify="space-around">
-		<v-col v-for="e in items" :key="e.id" class="text-center" v-intersect="onIntersect">
-			<EventCard :event="e" />
+	<DataIterator #="props" :items="items" :keys="keys" :isLoading="isLoading" :availability="_ => _.schedules.length > 0">
+		<v-col v-if="!isLoading" v-for="e in props.items" :key="e.raw.id" class="text-center snap" v-intersect="props.onIntersect">
+			<EventCard :event="e.raw" />
 		</v-col>
-	</v-row>
+	</DataIterator>
 </template>
 
 <style scoped>

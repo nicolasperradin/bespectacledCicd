@@ -22,7 +22,7 @@ const { retrieved: item, isLoading, error } = storeToRefs(eventShowStore)
 const eventDeleteStore = useEventDeleteStore()
 const { deleted, error: deleteError } = storeToRefs(eventDeleteStore)
 
-const icons: { [key: string]: string } = {
+const icons: Record<string, string> = {
 	broadway: 'fa fa-mask',
 	concert: 'fa fa-microphone',
 	other: 'fa fa-question'
@@ -33,6 +33,8 @@ const tab = ref(1)
 useMercureItem({ store: eventShowStore, deleteStore: eventDeleteStore, redirectRouteName: 'EventList' })
 
 await eventShowStore.retrieve(decodeURIComponent(route.params.id as string))
+
+const goToUpdatePage = (item: any) => router.push({ name: 'EventUpdate', params: { id: item.id } })
 
 const deleteItem = async () => {
 	if (!item?.value) return eventDeleteStore.setError(t('itemNotFound'))
@@ -45,7 +47,7 @@ onBeforeUnmount(() => eventShowStore.$reset())
 </script>
 
 <template>
-	<Toolbar :actions="['delete']" :breadcrumb="breadcrumb" :is-loading="isLoading" @delete="deleteItem" />
+	<Toolbar :actions="['edit', 'delete']" :breadcrumb="breadcrumb" :is-loading="isLoading" @edit="goToUpdatePage(item)" @delete="deleteItem" />
 
 	<v-container fluid>
 		<v-alert v-if="error || deleteError" type="error" class="mb-4" v-text="error || deleteError" closable />
@@ -74,7 +76,7 @@ onBeforeUnmount(() => eventShowStore.$reset())
 							<td><v-img :src="item.src" max-width="100" max-height="100" /></td>
 							<!-- <td>{{ item.src }}</td> -->
 						</tr>
-	
+
 						<tr>
 							<td>{{ $t('event.title') }}</td>
 							<td>{{ item.title }}</td>
@@ -136,7 +138,7 @@ onBeforeUnmount(() => eventShowStore.$reset())
 								</template>
 
 								<template v-else>
-									<v-chip v-for="schedule in item.schedules" :key="schedule" color="primary" v-text="schedule.date" />
+									<v-chip v-for="schedule in item.schedules" :key="schedule.id" color="primary" v-text="schedule.date" />
 								</template>
 							</td>
 						</tr>
@@ -145,6 +147,30 @@ onBeforeUnmount(() => eventShowStore.$reset())
 			</v-window-item>
 
 			<v-window-item value="2">
+				<thead>
+					<tr>
+						<th>{{ $t('field') }}</th>
+						<th>{{ $t('value') }}</th>
+					</tr>
+				</thead>
+
+				<tbody>
+				</tbody>
+			</v-window-item>
+
+			<v-window-item value="3">
+				<thead>
+					<tr>
+						<th>{{ $t('field') }}</th>
+						<th>{{ $t('value') }}</th>
+					</tr>
+				</thead>
+
+				<tbody>
+				</tbody>
+			</v-window-item>
+
+			<v-window-item value="4">
 				<thead>
 					<tr>
 						<th>{{ $t('field') }}</th>

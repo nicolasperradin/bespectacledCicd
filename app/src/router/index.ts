@@ -2,7 +2,7 @@ import { createRouter, createWebHistory } from 'vue-router'
 
 // import user from './user'
 import event from './event'
-// import venue from './venue'
+import venue from './venue'
 // import schedule from './schedule'
 import { useAuthStore } from '@/store'
 
@@ -20,7 +20,7 @@ const routes = [
 			{ path: '', name: 'admin', component: () => import('@/views/admin/HomePage.vue') },
 			// ...user,
 			...event,
-			// ...venue,
+			...venue,
 			// ...schedule
 		]
 	},
@@ -28,7 +28,7 @@ const routes = [
 		path: '/', component: () => import('@/layouts/Default.vue'), children: [
 			{ path: '', name: 'home', component: () => import('@/views/default/HomePage.vue') },
 			{ path: 'artists', name: 'artists', component: () => import('@/views/default/ArtistsPage.vue') },
-			{ path: 'artists/:id', name: 'artist', component: () => import('@/views/default/BlankPage.vue') },
+			{ path: 'artists/:id', name: 'artist', component: () => import('@/views/default/ArtistPage.vue') },
 			{ path: 'events', name: 'events', component: () => import('@/views/default/EventsPage.vue'), meta: { breadcrumb: ['Events'] } },
 			{ path: 'events/:id', name: 'event', component: () => import('@/views/default/BlankPage.vue'), meta: { breadcrumb: ['Events', 'Show Event'] } },
 			{ path: 'venues', name: 'venues', component: () => import('@/views/default/VenuesPage.vue') },

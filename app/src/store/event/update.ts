@@ -29,7 +29,7 @@ export const useEventUpdateStore = defineStore("eventUpdate", {
       this.toggleLoading();
 
       try {
-        const response = await api(id);
+        const response = await api('events/' + id);
         const data: Event = await response.json();
         const hubUrl = extractHubURL(response);
 

@@ -23,17 +23,17 @@ const emit = defineEmits<{
 <template>
 	<!-- <v-dialog v-model="show" width="300"> -->
 		<v-card class="mx-auto my-12" width="350" rounded>
-			<template v-slot:loader="{ isActive }">
+			<template #loader="{ isActive }">
 				<v-progress-linear :active="isActive" color="deep-purple" height="4" indeterminate />
 			</template>
 
 			<v-img src="https://cdn.vuetifyjs.com/images/cards/cooking.png" height="250" cover>
 				<!-- <v-toolbar color="rgba(0, 0, 0, 0)" theme="dark">
-					<template v-slot:prepend>
+					<template #prepend>
 						<v-btn icon="fa fa-arrow-left" />
 					</template>
 
-					<template v-slot:append>
+					<template #append>
 						<v-btn icon="fa fa-ellipsis-vertical" />
 					</template>
 				</v-toolbar> -->

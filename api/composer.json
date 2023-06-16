@@ -102,6 +102,12 @@
 		"test": [
 			"php bin/phpunit"
 		],
+		"serve": [
+			"symfony serve --port 80 --allow-http -d"
+		],
+		"stop": [
+			"symfony server:stop"
+		],
 		"drop": [
 			"php bin/console d:d:d -f"
 		],

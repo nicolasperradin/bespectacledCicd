@@ -11,91 +11,81 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 
 #[ORM\Entity(repositoryClass: BookingRepository::class)]
-// #[ApiResource(
-//     collectionOperations: [
-//         'get' => [
-//             'normalization_context' => [
-//                 'groups' => ['booking:read']
-//             ]
-//         ],
-//         'post' => [
-//             'denormalization_context' => [
-//                 'groups' => ['booking:write']
-//             ]
-//         ]
-//     ],
-//     itemOperations: [
-//         'get' => [
-//             'normalization_context' => [
-//                 'groups' => ['booking:read']
-//             ]
-//         ],
-//         'put' => [
-//             'denormalization_context' => [
-//                 'groups' => ['booking:write']
-//             ]
-//         ]
-//     ]
-// )]
+#[ApiResource(
+    normalizationContext: ['groups' => ['booking:read']],
+    denormalizationContext: ['groups' => ['booking:write']],
+    // security: "is_granted('IS_AUTHENTICATED_FULLY') and object == user or is_granted('ROLE_ADMIN')",
+)]
 class Booking
 {
-    #[ORM\Id]
-    #[ORM\GeneratedValue]
-    #[ORM\Column]
+    #[ORM\Id, ORM\Column, ORM\GeneratedValue]
     private ?int $id = null;
 
-    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
-    #[Groups(['booking:read', 'booking:write'])]
-    private ?\DateTimeInterface $created = null;
-
-    #[ORM\ManyToOne]
-    #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['booking:read', 'booking:write'])]
     #[Assert\NotBlank]
-    private ?Venue $venueId = null;
-
-    #[ORM\ManyToOne(inversedBy: 'bookings')]
-    #[ORM\JoinColumn(nullable: false)]
-    #[Groups(['booking:read', 'booking:write'])]
-    #[Assert\NotBlank]
-    private ?User $client = null;
-
     #[ORM\Column(type: Types::INTEGER)]
-    #[Groups(['booking:read', 'booking:write'])]
-    #[Assert\NotBlank]
+    #[Groups(['booking:read', 'booking:write', 'user:read', 'venue:read', 'transaction:read'])]
     private int $status = BookingStatusEnum::PENDING;
 
-    #[ORM\ManyToOne(inversedBy: 'bookings')]
-    #[ORM\JoinColumn(nullable: true)]
+    #[Groups(['booking:read'])]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeInterface $createdAt = null;
+
+    #[Groups('booking:read')]
+    #[ORM\Column(type: Types::DATETIME_MUTABLE)]
+    private ?\DateTimeImmutable $updatedAt = null;
+
+    #[Assert\NotBlank]
     #[Groups(['booking:read', 'booking:write'])]
+    #[ORM\ManyToOne(inversedBy: 'bookings'), ORM\JoinColumn(nullable: false)]
+    private ?User $client = null;
+
+    #[Assert\NotBlank]
+    #[Groups(['booking:read', 'booking:write'])]
+    #[ORM\ManyToOne(inversedBy: 'bookings'), ORM\JoinColumn(nullable: false)]
+    private ?Venue $venue = null;
+
+    #[Assert\NotBlank]
+    #[Groups(['booking:read', 'booking:write'])]
+    #[ORM\ManyToOne(inversedBy: 'bookings'), ORM\JoinColumn(nullable: true)]
     private ?Transaction $transaction = null;
-    
 
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getCreated(): ?\DateTimeInterface
+    public function getStatus(): int
     {
-        return $this->created;
+        return $this->status;
     }
 
-    public function setCreated(\DateTimeInterface $created): self
+    public function setStatus(BookingStatusEnum $status): self
     {
-        $this->created = $created;
+        $this->status = $status;
 
         return $this;
     }
 
-    public function getVenueId(): ?Venue
+    public function getCreatedAt(): ?\DateTimeInterface
     {
-        return $this->venueId;
+        return $this->createdAt;
     }
 
-    public function setVenueId(?Venue $venueId): self
+    public function setCreatedAt(\DateTimeInterface $createdAt): self
     {
-        $this->venueId = $venueId;
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeInterface
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(\DateTimeInterface $updatedAt): self
+    {
+        $this->updatedAt = $updatedAt;
 
         return $this;
     }
@@ -112,14 +102,14 @@ class Booking
         return $this;
     }
 
-    public function getStatus(): int
+    public function getVenue(): ?Venue
     {
-        return $this->status;
+        return $this->venue;
     }
 
-    public function setStatus(BookingStatusEnum $status): self
+    public function setVenue(?Venue $venue): self
     {
-        $this->status = $status;
+        $this->venue = $venue;
 
         return $this;
     }
@@ -135,5 +125,4 @@ class Booking
 
         return $this;
     }
-    
 }

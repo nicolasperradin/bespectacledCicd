@@ -108,7 +108,7 @@ onBeforeUnmount(() => eventDeleteStore.$reset())
 
 			<template #item.src="{ item }">
 				<v-tooltip :text="item.raw.title">
-					<template v-slot:activator="{ props }">
+					<template #activator="{ props }">
 						<router-link v-bind="props" :to="{ name: 'EventShow', params: { id: item.raw['@id'] } }">
 							<v-img :src="item.raw.src" max-width="100" max-height="100" />
 						</router-link>
@@ -118,7 +118,7 @@ onBeforeUnmount(() => eventDeleteStore.$reset())
 
 			<template #item.type="{ item }">
 				<v-tooltip :text="item.raw.type">
-					<template v-slot:activator="{ props }">
+					<template #activator="{ props }">
 						<v-icon v-bind="props" :icon="icons[item.raw.type]" />
 					</template>
 				</v-tooltip>
@@ -130,7 +130,7 @@ onBeforeUnmount(() => eventDeleteStore.$reset())
 
 			<template #item.venue="{ item }">
 				<v-tooltip :text="item.raw.venue.name">
-					<template v-slot:activator="{ props }">
+					<template #activator="{ props }">
 						<router-link v-bind="props" v-if="router.hasRoute('VenueShow')" :to="{ name: 'VenueShow', params: { id: item.raw.venue } }">
 							<v-img :src="item.raw.venue.src" max-width="100" max-height="100" />
 						</router-link>
@@ -146,7 +146,7 @@ onBeforeUnmount(() => eventDeleteStore.$reset())
 
 			<template #item.artists="{ item }">
 				<v-tooltip v-for="artist in item.raw.artists" :text="artist.username">
-					<template v-slot:activator="{ props }">
+					<template #activator="{ props }">
 						<template v-if="router.hasRoute('UserShow')">
 							<router-link :key="artist" :to="{ name: 'UserShow', params: { id: artist } }" v-text="artist" />
 						</template>
@@ -160,7 +160,7 @@ onBeforeUnmount(() => eventDeleteStore.$reset())
 
 			<template #item.schedules="{ item }">
 				<v-tooltip v-for="day in item.raw.schedules" :text="`${day.date} (${day.times.length})`">
-					<template v-slot:activator="{ props }">
+					<template #activator="{ props }">
 						<template v-if="router.hasRoute('ScheduleShow')">
 							<router-link :key="day" :to="{ name: 'ScheduleShow', params: { id: day } }" v-text="day" />
 						</template>

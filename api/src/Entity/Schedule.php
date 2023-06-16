@@ -12,40 +12,12 @@ use Symfony\Component\Validator\Constraints as Assert;
 #[ORM\Entity(repositoryClass: ScheduleRepository::class)]
 #[ApiResource(
     normalizationContext: ['groups' => ['schedule:read']],
-    denormalizationContext: ['groups' => ['schedule:write']],
-//     operations: [
-//         'get' => [
-//             'normalization_context' => [
-//                 'groups' => ['schedule:read']
-//             ]
-//         ],
-//         'post' => [
-//             'denormalization_context' => [
-//                 'groups' => ['schedule:write']
-//             ]
-//         ]
-//     ],
-//     itemOperations: [
-//         'get' => [
-//             'normalization_context' => [
-//                 'groups' => ['schedule:read']
-//             ]
-//         ],
-//         'put' => [
-//             'denormalization_context' => [
-//                 'groups' => ['schedule:write']
-//             ]
-//         ]
-//     ]
+    denormalizationContext: ['groups' => ['schedule:write']]
 )]
 class Schedule
 {
     #[ORM\Id, ORM\Column, ORM\GeneratedValue]
     private ?int $id = null;
-
-    #[ORM\ManyToOne(inversedBy: 'schedules')]
-    #[Groups(['schedule:read', 'schedule:write'])]
-    private ?Event $event = null;
 
     #[ORM\Column]
     #[Groups(['schedule:read', 'schedule:write', 'event:read'])]
@@ -56,21 +28,13 @@ class Schedule
     #[Groups(['schedule:read', 'schedule:write', 'event:read'])]
     private array $times = [];
 
+    #[ORM\ManyToOne(inversedBy: 'schedules')]
+    #[Groups(['schedule:read', 'schedule:write'])]
+    private ?Event $event = null;
+
     public function getId(): ?int
     {
         return $this->id;
-    }
-
-    public function getEvent(): ?Event
-    {
-        return $this->event;
-    }
-
-    public function setEvent(?Event $event): self
-    {
-        $this->event = $event;
-
-        return $this;
     }
 
     public function getDate(): ?string
@@ -93,6 +57,18 @@ class Schedule
     public function setTimes(array $times): self
     {
         $this->times = $times;
+
+        return $this;
+    }
+
+    public function getEvent(): ?Event
+    {
+        return $this->event;
+    }
+
+    public function setEvent(?Event $event): self
+    {
+        $this->event = $event;
 
         return $this;
     }

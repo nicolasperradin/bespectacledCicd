@@ -1,0 +1,41 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "npm",
+			"script": "dev",
+			"path": "app",
+			"problemMatcher": [],
+			"label": "Start Client",
+			"detail": "vite",
+			"group": {
+				"kind": "test",
+				"isDefault": true
+			}
+		},
+		{
+			"type": "shell",
+			"problemMatcher": [],
+			"label": "Start Server",
+			"detail": "cd api && composer serve",
+			"command": "composer",
+			"args": ["serve"],
+			"icon": {
+				"id": "server",
+				"color": "terminal.ansiCyan"
+			}
+		},
+		{
+			"type": "shell",
+			"problemMatcher": [],
+			"label": "Stop Server",
+			"detail": "composer stop",
+			"command": "composer",
+			"args": ["stop"],
+			"icon": {
+				"id": "stop",
+				"color": "terminal.ansiCyan"
+			}
+		}
+	]
+}

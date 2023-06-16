@@ -28,7 +28,7 @@ const { isLoading: deleteLoading, error: deleteError } = storeToRefs(eventDelete
 const eventUpdateStore = useEventUpdateStore()
 const { retrieved: item, updated, isLoading, error, violations, } = storeToRefs(eventUpdateStore)
 
-const icons: { [key: string]: string } = {
+const icons: Record<string, string> = {
 	broadway: 'fa fa-mask',
 	concert: 'fa fa-microphone',
 	other: 'fa fa-question'

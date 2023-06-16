@@ -6,5 +6,7 @@ export default {
 		"eslint:recommended",
 		"@vue/eslint-config-typescript"
 	],
-	rules: { "vue/multi-word-component-names": "off" }
+	rules: {
+		"vue/multi-word-component-names": "off",
+	}
 }

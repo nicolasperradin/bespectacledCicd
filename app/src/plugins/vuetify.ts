@@ -1,18 +1,48 @@
 import 'vuetify/styles'
-import { createVuetify } from 'vuetify'
+import { Directive } from 'vue'
 import { mdi } from 'vuetify/iconsets/mdi'
+import * as labs from 'vuetify/labs/components'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 import { aliases, fa } from 'vuetify/iconsets/fa'
-import { VDataTableServer } from 'vuetify/labs/VDataTable'
+import { createVuetify, ThemeDefinition  } from 'vuetify'
+import { VuetifyDateAdapter as adapter } from 'vuetify/labs/date/adapters/vuetify'
 
-const ScrollTo = (el: HTMLElement, { value }: any) => el.addEventListener('click', () => document && document.querySelector(value).scrollIntoView({ behavior: 'smooth' }))
-const Notify = (el: HTMLElement, { value }: any) => el.addEventListener('click', () => Notification.requestPermission().then(() => new Notification('BeSpectacled', { body: (value[0]?.name || value[0]?.title) + value[1], icon: value[0].src })))
-// TODO add other directives like v-admin
+// TODO v-admin and v-tag
+const helpers: Record<string, Directive<HTMLElement, any>> = {
+	// Set the focus on an element (if not an input, focus a child one)
+	Focus: (el, { value = true }) => value && (el.tagName === 'INPUT' ? el.focus() : el.querySelector('input')?.focus()),
+	// Scroll to an element but with an offset (height and padding bottom of the navbar)
+	ScrollTo: (el, { value }) => el.addEventListener('click', () => window.scrollTo({ behavior: 'smooth', top: document.querySelector(value).getBoundingClientRect().top + window.scrollY - 48 - 16 })),
+	// Show the user a notification
+	Notify: (el, { value }) => el.addEventListener('click', () => Notification.requestPermission().then(() => new Notification('BeSpectacled', { body: (value[0]?.name || value[0]?.title) + value[1], icon: value[0].src })))
+}
+
+const dark: ThemeDefinition = {
+	dark: true,
+	colors: {
+		// info: '',
+		// error: '',
+		// success: '',
+		// warning: '',
+		primary: '#7750f8',
+		surface: '#1d2333',
+		// secondary: '#40d04f',
+		background: '#161b28',
+	}
+}
+
+const variations = {
+	darken: 1,
+	lighten: 1,
+	colors: ['primary', 'secondary']
+}
 
 export default createVuetify({
-	components: { ...components, VDataTableServer },
-	directives: { ...directives, ScrollTo, Notify },
-	theme: { defaultTheme: 'dark' },
-	icons: { defaultSet: 'fa', aliases, sets: { fa, mdi } }
+	date: { adapter },
+	components: { ...components, ...labs },
+	directives: { ...directives, ...helpers },
+	theme: { defaultTheme: 'dark', themes: { dark }, variations },
+	icons: { defaultSet: 'fa', aliases, sets: { fa, mdi } },
+	// locale: { locale: 'en', fallback: 'en', messages: {} }
 })

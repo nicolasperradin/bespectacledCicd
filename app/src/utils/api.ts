@@ -36,6 +36,7 @@ export default async function (id: string, options: any = {}) {
   });
 
   const response = await fetch(new URL(ENTRYPOINT + '/' + id.replace('/api/', '')), options);
+  // const response = await fetch(new URL(ENTRYPOINT + '/' + id), options);
 
   if (!response.ok) {
     const data = await response.json();

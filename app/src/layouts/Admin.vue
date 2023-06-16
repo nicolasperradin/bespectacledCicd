@@ -65,16 +65,16 @@ const resendVerificationEmail = () => {
 <template>
 	<v-app dark>
 		<v-app-bar color="pink-accent-4" density="compact" app>
-			<template v-slot:prepend>
+			<template #prepend>
 				<v-app-bar-nav-icon @click.stop="drawer = !drawer" />
 				<v-btn prepend-icon="fa fa-glasses" color="white" @click="$router.push('/admin')">BeSpectacled Admin</v-btn>
 
 				<v-dialog scrollable>
-					<template v-slot:activator="{ props }">
+					<template #activator="{ props }">
 						<v-btn prepend-icon="fa fa-search" v-bind="props">Search</v-btn>
 					</template>
 
-					<template v-slot:default="{ isActive }">
+					<template #default="{ isActive }">
 						<v-card>
 							<v-toolbar color="primary" title="Search BeSpectacled">
 								<v-btn icon="fa fa-times" @click="isActive.value = false" />
@@ -122,7 +122,7 @@ const resendVerificationEmail = () => {
 					:title="user?.username || 'John Doe'"
 					:subtitle="user?.email || 'john@doe.com'"
 				>
-					<template v-slot:append>
+					<template #append>
 						<v-btn variant="text" icon="fa fa-pen" @click="$router.push('/profile')" />
 					</template>
 				</v-list-item>
@@ -153,7 +153,7 @@ const resendVerificationEmail = () => {
 					You need to verify your email address before you can continue.
 				</v-banner-text>
 
-				<template v-slot:actions>
+				<template #actions>
 					<v-btn @click="resendVerificationEmail">Resend verification email</v-btn>
 				</template>
 			</v-banner>

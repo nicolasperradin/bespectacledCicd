@@ -47,7 +47,7 @@ const cards = ref(['Entities'])
 					<v-list-subheader>Manage Entities</v-list-subheader>
 
 					<v-list-item
-						v-for="{ name, icon, to, key, children } in categories" 
+						v-for="{ name, icon, to, key, children } in categories"
 						:key="name"
 						:prepend-icon="icon"
 						@click="() => $router.push('/admin' + to)"
@@ -64,7 +64,7 @@ const cards = ref(['Entities'])
 					<v-list-subheader>Create Entities</v-list-subheader>
 
 					<v-list-item
-						v-for="{ name, icon, to, key, children } in categories" 
+						v-for="{ name, icon, to, key, children } in categories"
 						:key="name"
 						:prepend-icon="icon"
 						@click="() => $router.push('/admin' + to + 'create')"

@@ -73,6 +73,7 @@ const handleLogin = async (user: any) => {
 				<v-row>
 					<v-col cols="12">
 						<v-text-field
+							autofocus
 							v-model="inputs.email"
 							:error-messages="v$.email?.$errors.map((e: any) => e.$message)"
 							:counter="50"
@@ -100,7 +101,7 @@ const handleLogin = async (user: any) => {
 					</v-col>
 				</v-row>
 			</v-card-text>
-			
+
 			<v-card-actions>
 				<v-btn color="primary" variant="tonal" @click="$router.push('/register')">No account yet?</v-btn>
 				<v-btn color="primary" variant="tonal" @click="$router.push('/forgot-password')">Forgot Password?</v-btn>

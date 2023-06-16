@@ -25,12 +25,12 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 // use Symfony\Component\Security\Core\Authorization\ExpressionLanguage
 
 #[ApiResource(
-    normalizationContext: ['groups' => ['user:get']],
-    denormalizationContext: ['groups' => ['user:post']],
+    normalizationContext: ['groups' => ['user:read']],
+    denormalizationContext: ['groups' => ['user:write']],
     security: "is_granted('IS_AUTHENTICATED_FULLY') and object == user or is_granted('ROLE_ADMIN')",
     operations: [
         new GetCollection(
-            normalizationContext: ['groups' => ['user:get']]
+            normalizationContext: ['groups' => ['user:read']]
         ),
         new GetCollection(
             uriTemplate: '/users/me',
@@ -39,24 +39,31 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
         new Get(
             // uriTemplate: '/users/{id}',
             normalizationContext: [
-                'groups' => ['user:get'],
+                'groups' => ['user:read'],
                 'access_control' => "is_granted('IS_AUTHENTICATED_FULLY') and object == user or is_granted('ROLE_ADMIN')"
             ]
         ),
         new Post(
             // uriTemplate: '/users',
-            // validationContext: ['Default', 'user:post'],
+            // validationContext: ['Default', 'user:write'],
             security: "is_granted('PUBLIC_ACCESS')"
         ),
         new Put(
             // uriTemplate: '/users/{id}',
-            denormalizationContext: ['groups' => ['user:put']],
+            denormalizationContext: ['groups' => ['user:write']],
             security: "is_granted('IS_AUTHENTICATED_FULLY') and object == user or is_granted('ROLE_ADMIN')"
         ),
         new Delete(
             // uriTemplate: '/users/{id}',
             security: "is_granted('IS_AUTHENTICATED_FULLY') and object == user or is_granted('ROLE_ADMIN')"
         ),
+        // "put-password" => [
+        //     "method" => "PUT",
+        //     "path" => "/users/{id}/reset-password",
+        //     "controller" => ResetPasswordAction::class,
+        //     "denormalization_context" => ["groups" => ["user:reset:password"]],
+        //     "access_control" => "is_granted('IS_AUTHENTICATED_FULLY') and object == user"
+        // ]
         // new Put(
         //     uriTemplate: '/users/{id}/reset-password',
         //     controller: ResetPasswordAction::class,
@@ -78,21 +85,26 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->setUpdatedAt(new \DateTimeImmutable());
     }
 
-    #[Groups('user:get')]
+    #[Groups('user:read')]
     #[ORM\Id, ORM\Column, ORM\GeneratedValue]
     private ?int $id = null;
 
+    #[Assert\NotBlank]
+    #[ORM\Column(type: 'string', length: 255)]
+    #[Groups(['user:read', 'user:write', 'event:read', 'ticket:read', 'booking:read', 'transaction:read'])]
+    private ?string $username = null;
+
     #[Assert\Email, Assert\NotBlank]
-    #[Groups(['user:get', 'user:post'])]
     #[ORM\Column(length: 180, unique: true)]
+    #[Groups(['user:read', 'user:write', 'event:read', 'ticket:read', 'booking:read', 'transaction:read'])]
     private ?string $email = null;
 
     #[ORM\Column]
-    #[Groups('user:get')]
+    #[Groups('user:read')]
     private array $roles = [];
 
     #[ORM\Column]
-    #[Groups('user:post')]
+    #[Groups('user:write')]
     #[Assert\Regex(
         pattern: "/(?=.*[A-Z])(?=.*[a-z])(?=.*[0-9]).{7,}/",
         message: "Password must be seven characters long and contain at least one digit, one upper case letter and one lower case letter"
@@ -100,15 +112,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $password = null;
 
     #[Assert\NotBlank]
-    #[Groups('user:post')]
+    #[Groups('user:write')]
     #[SerializedName('password')]
     private ?string $plainPassword = null;
 
-    #[Assert\NotBlank]
-    #[ORM\Column(type: 'string', length: 255)]
-    #[Groups(['user:get', 'user:post', 'event:read'])]
-    private ?string $username = null;
-
+    #[Groups('user:read')]
     #[ORM\Column(type: 'boolean', options: ['default' => '0'])]
     private bool $enabled = false;
 
@@ -116,11 +124,11 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     private ?string $confirmationToken = null;
 
     #[ORM\Column]
-    #[Groups('user:get')]
+    #[Groups('user:read')]
     private ?\DateTimeImmutable $createdAt = null;
 
     #[ORM\Column]
-    #[Groups('user:get')]
+    #[Groups('user:read')]
     private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column(name: 'password_change_date', type: 'integer', nullable: true)]
@@ -148,24 +156,23 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     )]
     private $newRetypedPassword;
 
+    #[Groups('user:read')]
     #[ORM\ManyToMany(mappedBy: 'artists', targetEntity: Event::class)]
     private Collection $events;
 
-    #[Groups('user:get')]
+    #[Groups('user:read')]
     #[ORM\OneToMany(mappedBy: 'buyer', targetEntity: Ticket::class)]
     private Collection $tickets;
 
-    #[Groups('user:get')]
+    #[Groups('user:read')]
     #[ORM\OneToMany(mappedBy: 'client', targetEntity: Booking::class)]
     private Collection $bookings;
 
+    #[Groups('user:read')]
     #[ORM\OneToMany(mappedBy: 'buyer', targetEntity: Transaction::class)]
     private Collection $transactions;
 
-    #[ORM\Column(type: 'boolean', options: ['default' => '0'])]
-    private $validatedAccountArtist = false;
-
-    #[Groups('user:get')]
+    #[Groups('user:read')]
     #[ORM\Column(type: 'datetime', nullable: true)]
     private $deletedAt;
 
@@ -176,18 +183,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->tickets = new ArrayCollection();
         $this->bookings = new ArrayCollection();
         $this->transactions = new ArrayCollection();
-    }
-
-    public function isValidatedAccountArtist(): ?bool
-    {
-        return $this->validatedAccountArtist;
-    }
-
-    public function setValidatedAccountArtist(bool $validatedAccountArtist): self
-    {
-        $this->validatedAccountArtist = $validatedAccountArtist;
-
-        return $this;
     }
 
     public function getDeletedAt(): ?\DateTimeInterface
@@ -229,10 +224,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-
     public function getId(): ?int
     {
         return $this->id;
+    }
+
+    public function getUsername(): string
+    {
+        return (string) $this->username;
     }
 
     public function getEmail(): ?string
@@ -255,11 +254,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function getUserIdentifier(): string
     {
         return (string) $this->email;
-    }
-
-    public function getUsername(): string
-    {
-        return (string) $this->username;
     }
 
     /**

@@ -26,7 +26,7 @@ class RefreshToken
     public static function createForUserWithTtl(string $refreshToken, User $user, int $ttl): RefreshToken
     {
         $valid = new \DateTime();
-        $valid->modify('+'.$ttl.' seconds');
+            $valid->modify('+'.$ttl.' seconds');
 
         $model = new static();
         $model->setRefreshToken($refreshToken);

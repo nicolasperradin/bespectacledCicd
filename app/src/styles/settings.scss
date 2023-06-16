@@ -6,17 +6,6 @@
 
 // https://next.vuetifyjs.com/features/sass-variables/`
 // @use 'vuetify' with (
-//   $color-pack: false
+//   $color-pack: false,
+//   $utilities: false
 // );
-
-.v-divider {
-    width: auto !important;
-}
-
-.blend {
-    padding-inline: 8px;
-    border-radius: 5px;
-    background: #FFF;
-    color: black !important;
-    mix-blend-mode: lighten;
-}

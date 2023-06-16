@@ -1,6 +1,6 @@
 // import user from './user'
-// import venue from './venue'
 import event from './event'
+import venue from './venue'
 // import schedule from './schedule'
 
 export default {
@@ -29,6 +29,6 @@ export default {
 	loading: 'Loading...',
 	// user,
 	event,
-	// venue,
+	venue,
 	// schedule
 }

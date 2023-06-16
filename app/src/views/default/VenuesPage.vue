@@ -1,9 +1,19 @@
 <script setup>
 import { ref, onMounted } from 'vue'
+import { useI18n } from 'vue-i18n'
+import { storeToRefs } from 'pinia'
+import { useRouter } from 'vue-router'
+
+// import type { Venue } from '@/types/venue'
+// import type { VuetifyOrder } from '@/types/list'
+import { useVenueListStore } from '@/store/venue/list'
+import { useBreadcrumb } from '@/composables/breadcrumb'
+import { useMercureList } from '@/composables/mercureList'
+import { useVenueDeleteStore } from '@/store/venue/delete'
 
 import EventService from '@/services/event.service'
 import VenueService from '@/services/venue.service'
-// import VenueCard from '@/components/custom/VenueCard.vue'
+import VenueCard from '@/components/custom/VenueCard.vue'
 
 const parallax = new URL('@/assets/stadium.jpeg', import.meta.url).href
 
@@ -41,7 +51,9 @@ const onIntersect = {
 </script>
 
 <template>
-	<v-parallax :src="parallax">
+	<v-progress-linear :active="isLoading" color="deep-purple" height="4" indeterminate />
+
+	<v-parallax class="snap" :src="parallax">
 		<div class="d-flex flex-column fill-height justify-center align-center">
 			<div class="text-h2 font-weight-thin mb-4">BeSpectacled Venues</div>
 			<div class="text-h4 text-secondary">Meet your favorite artists in our venues</div>
@@ -56,16 +68,16 @@ const onIntersect = {
 		</div>
 	</v-parallax>
 
-	<v-btn
+	<!-- <v-btn
 		color="primary"
 		:icon="confirm ? 'fa fa-eye-slash' : 'fa fa-eye'"
 		size="x-large"
 		@click="confirm = !confirm"
 	/>
 
-	<!-- <VenueCard :venue="venue" @book="confirm = !confirm" @cancel="confirm = !confirm" /> -->
+	<VenueCard :venue="venue" @book="confirm = !confirm" @cancel="confirm = !confirm" /> -->
 
-	<v-sheet v-for="key in Object.keys(sortedVenues)" :key="key" class="mx-auto" elevation="8" :class="key === Object.keys(sortedVenues)[0] ? 'mb-4' : ''">
+	<v-sheet v-for="key in Object.keys(sortedVenues)" :key="key" class="mx-auto snap" elevation="8" :class="key === Object.keys(sortedVenues)[0] ? 'mb-4' : ''">
 		<div class="text-h4 font-weight-thin px-4 pt-4">For {{ key }}s</div>
 		<v-slide-group v-model="groups[key]" selected-class="bg-primary border-lg" show-arrows v-intersect="onIntersect">
 			<v-slide-group-item v-for="{ id, name, src } in sortedVenues[key]" :key="id" v-slot="{ isSelected, toggle, selectedClass }">
@@ -78,7 +90,7 @@ const onIntersect = {
 				</v-card>
 			</v-slide-group-item>
 		</v-slide-group>
-	
+
 		<v-expand-transition>
 			<v-sheet v-if="groups[key] != null" class="d-flex flex-column fill-height justify-center align-center text-white">
 				<div class="text-h4 font-weight-thin">{{ sortedVenues[key][groups[key]].name }}</div>
@@ -94,7 +106,7 @@ const onIntersect = {
 				<v-card-text>
 					<v-chip-group column>
 						<v-menu v-for="({ id, title, price, src }, i) in events.filter(e => e.venue === sortedVenues[key][groups[key]].id)" :key="title" v-model="menus[key][i]" location="top start" origin="top start" transition="scale-transition">
-							<template v-slot:activator="{ props }">
+							<template #activator="{ props }">
 								<v-chip v-bind="props" pill link>
 									<v-avatar start :image="src" />
 									{{ title }}
@@ -103,8 +115,8 @@ const onIntersect = {
 
 							<v-card width="max-content">
 								<v-list bg-color="black">
-									<v-list-item :title="title" :subtitle="`Min. $${price} per seat`" :prepend-avatar="src">							
-										<template v-slot:append>
+									<v-list-item :title="title" :subtitle="`Min. $${price} per seat`" :prepend-avatar="src">
+										<template #append>
 											<v-list-item-action>
 												<v-btn icon variant="text" @click="menus[key][i] = false">
 													<v-icon icon="fa fa-times-circle" />

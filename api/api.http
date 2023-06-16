@@ -22,6 +22,7 @@ Content-Type: application/json
 # @name refresh
 GET {{host}}/refresh-token
 accept: application/json
+Authorization: Bearer {{token}}
 ###
 
 ### Get users
@@ -31,7 +32,7 @@ Authorization: Bearer {{token}}
 
 ### Get artists
 GET {{baseUrl}}/users?roles[]=ROLE_ARTIST
-accept: application/ld+json
+accept: application/json
 Authorization: Bearer {{token}}
 
 ### Create user
