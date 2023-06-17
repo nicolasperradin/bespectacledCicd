@@ -51,8 +51,6 @@ const onIntersect = {
 </script>
 
 <template>
-	<v-progress-linear :active="isLoading" color="deep-purple" height="4" indeterminate />
-
 	<v-parallax class="snap" :src="parallax">
 		<div class="d-flex flex-column fill-height justify-center align-center">
 			<div class="text-h2 font-weight-thin mb-4">BeSpectacled Venues</div>

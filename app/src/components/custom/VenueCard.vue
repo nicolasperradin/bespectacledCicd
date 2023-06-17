@@ -24,7 +24,7 @@ const emit = defineEmits<{
 	<!-- <v-dialog v-model="show" width="300"> -->
 		<v-card class="mx-auto my-12" width="350" rounded>
 			<template #loader="{ isActive }">
-				<v-progress-linear :active="isActive" color="deep-purple" height="4" indeterminate />
+				<v-progress-linear :active="isActive" color="primary" indeterminate />
 			</template>
 
 			<v-img src="https://cdn.vuetifyjs.com/images/cards/cooking.png" height="250" cover>

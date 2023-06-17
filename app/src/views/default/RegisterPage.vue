@@ -5,7 +5,7 @@ import { email, minLength, maxLength, required, sameAs } from '@vuelidate/valida
 
 import * as yup from 'yup'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/store';
+import { useAuthStore } from '@/store'
 
 const $router = useRouter()
 const $store = useAuthStore()
@@ -124,7 +124,7 @@ const handleRegister = async (user: any) => {
 					</v-col>
 				</v-row>
 			</v-card-text>
-			
+
 			<v-card-actions>
 				<v-btn color="primary" variant="tonal" @click="$router.push('/login')">Already registered?</v-btn>
 				<v-spacer />

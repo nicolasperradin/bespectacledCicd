@@ -46,8 +46,6 @@ const nextPage = () => page.value + 1 <= numberOfPages.value && (page.value += 1
 </script>
 
 <template>
-	<v-progress-linear :active="isLoading" color="white" height="4" indeterminate />
-
 	<v-data-iterator
 		v-model:items-per-page="itemsPerPage"
 		v-model:page="page"
@@ -75,14 +73,14 @@ const nextPage = () => page.value + 1 <= numberOfPages.value && (page.value += 1
 
 		<template #no-data>
 			<v-row v-if="isLoading" class="mb-6" justify="space-around">
-				<v-col v-for="n in 6" :key="n" v-intersect="onIntersect">
+				<v-col v-for="n in 6" :key="n" class="snap" v-intersect="onIntersect">
 					<slot name="skeleton">
 						<v-skeleton-loader class="mx-auto align-content-start" width="350" height="492" elevation="8" type="image,image,heading,chip@3,divider,actions" />
 					</slot>
 				</v-col>
 			</v-row>
 
-			<v-alert type="warning" text="No results found" />
+			<v-alert v-if="!isLoading" type="warning" text="No results found" />
 		</template>
 
 		<template #default="props">
@@ -93,7 +91,7 @@ const nextPage = () => page.value + 1 <= numberOfPages.value && (page.value += 1
 
 		<template #footer>
 			<!-- <v-bottom-sheet open-on-hover> -->
-				<div class="d-flex align-center justify-space-around pa-4">
+				<div class="d-flex align-center justify-space-around pa-4 snap">
 					<span class="grey--text">Items per page</span>
 
 					<v-menu>

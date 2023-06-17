@@ -41,7 +41,7 @@ const slides = [
 <template>
 	<v-card class="mx-auto my-auto" width="350" elevation="8" rounded>
 		<template #loader="{ isActive }">
-			<v-progress-linear :active="isActive" color="deep-purple" height="4" indeterminate />
+			<v-progress-linear :active="isActive" color="primary" indeterminate />
 		</template>
 
 		<v-img v-if="typeof event.src === 'string'" :src="event.src" height="250" class="card-bg" cover>

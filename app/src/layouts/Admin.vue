@@ -6,13 +6,13 @@ import { useRouter } from 'vue-router'
 import UserService from '@/services/user.service'
 import EventService from '@/services/event.service'
 import VenueService from '@/services/venue.service'
-import { useAuthStore, useThemeStore } from '@/store'
+import { useAuthStore, useUtilsStore } from '@/store'
 import { useEventListStore } from '@/store/event/list'
 
 const $theme = useTheme()
 const $router = useRouter()
 const $store = useAuthStore()
-const $themeStore = useThemeStore()
+const $utilsStore = useUtilsStore()
 const $eventListStore = useEventListStore()
 
 const search = ref('')
@@ -23,11 +23,11 @@ const categories = ref([
 	{ name: 'Users', icon: 'fa fa-user-tie', to: '/users/', key: 'username', children: [] },
 	{ name: 'Events', icon: 'fa fa-star', to: '/events/', key: 'title', children: [] },
 	{ name: 'Venues', icon: 'fa fa-location-dot', to: '/venues/', key: 'name', children: [] },
-	{ name: 'Schedules', icon: 'fa fa-calendar-days', to: '/schedule/' }
+	{ name: 'Schedules', icon: 'fa fa-calendar-days', to: '/schedule/', children: [] }
 ])
 
 // onBeforeMount(() => $theme.global.name.value = $store.state.theme.dark ? 'dark' : 'light')
-onBeforeMount(() => $theme.global.name.value = $themeStore.dark ? 'dark' : 'light')
+onBeforeMount(() => $theme.global.name.value = $utilsStore.dark ? 'dark' : 'light')
 
 onMounted(async () => {
 	const { data: users } = await UserService.all()
@@ -49,9 +49,9 @@ const filteredCategories = computed(() => {
 })
 
 const toggle = () => {
-	$themeStore.toggle()
+	$utilsStore.toggle()
 	// $theme.global.name.value = $store.state.theme.dark ? 'dark' : 'light'
-	$theme.global.name.value = $themeStore.dark ? 'dark' : 'light'
+	$theme.global.name.value = $utilsStore.dark ? 'dark' : 'light'
 }
 
 const logout = () => $store.logout()

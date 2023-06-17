@@ -6,13 +6,13 @@ import { useRouter } from 'vue-router'
 import UserService from '@/services/user.service'
 import EventService from '@/services/event.service'
 import VenueService from '@/services/venue.service'
-import { useAuthStore, useThemeStore } from '@/store'
+import { useAuthStore, useUtilsStore } from '@/store'
 import Carousel from '@/components/custom/Carousel.vue'
 
 const $theme = useTheme()
 const $router = useRouter()
 const $store = useAuthStore()
-const $themeStore = useThemeStore()
+const $utilsStore = useUtilsStore()
 
 const tab = ref(null)
 const search = ref('')
@@ -41,7 +41,7 @@ const categories = ref([
 	{ name: 'Ticketing', icon: 'fa fa-ticket', to: '/ticketing' }
 ])
 
-onBeforeMount(() => $theme.global.name.value = $themeStore.dark ? 'dark' : 'light')
+onBeforeMount(() => $theme.global.name.value = $utilsStore.dark ? 'dark' : 'light')
 
 onMounted(async () => {
 	// Register shortcuts
@@ -72,8 +72,8 @@ const registerShortcuts = e => {
 }
 
 const toggle = () => {
-	$themeStore.toggle()
-	$theme.global.name.value = $themeStore.dark ? 'dark' : 'light'
+	$utilsStore.toggle()
+	$theme.global.name.value = $utilsStore.dark ? 'dark' : 'light'
 }
 
 const logout = () => $store.logout()
@@ -85,9 +85,11 @@ const resendVerificationEmail = () => {
 </script>
 
 <template>
-	<v-app :dark="$themeStore.dark">
+	<v-app :dark="$utilsStore.dark">
 		<!-- <v-parallax style="background-size: cover;" :src="backgroundImage"> -->
 			<v-app-bar class="ps-4" :height="scrolled || $router.currentRoute.value.name !== 'home' ? undefined : 100" :elevation="scrolled ? 4 : 0"  :color="scrolled ? 'primary' : 'transparent'" density="compact" v-scroll="e => scrolled = e.target.scrollingElement.scrollTop > 50" app flat>
+				<v-progress-linear class="position-fixed" :active="$utilsStore.isLoading" color="white" indeterminate />
+
 				<template #prepend>
 					<v-app-bar-nav-icon class="me-4" :icon="'fa ' + (drawer ? 'fa-times' : 'fa-bars fa-fade')" @click="drawer = !drawer" />
 					<v-btn prepend-icon="fa fa-glasses" :color="scrolled ? 'white' : 'primary'" :size="scrolled || $router.currentRoute.value.name !== 'home' ? undefined : 'x-large'" @click="$router.push({ name: 'home' })">BeSpectacled</v-btn>
@@ -160,34 +162,37 @@ const resendVerificationEmail = () => {
 					</v-tabs>
 				</template>
 
-				<v-spacer />
-
-				<v-btn v-if="user?.token" prepend-icon="fa fa-id-card" :color="scrolled ? 'white' : 'primary'" :size="scrolled || $router.currentRoute.value.name !== 'home' ? undefined : 'x-large'" variant="outlined" @click="$router.push('/profile')">Profile</v-btn>
-				<v-btn v-else prepend-icon="fa fa-right-to-bracket" :color="scrolled ? 'white' : 'primary'" :size="scrolled || $router.currentRoute.value.name !== 'home' ? undefined : 'x-large'" @click="$router.push('/login')">Login</v-btn>
-				<v-btn :icon="$theme.global.current.value.dark ? 'fa fa-sun' : 'fa fa-moon'" @click="toggle" />
+				<template #append>
+					<v-btn v-if="user?.token" prepend-icon="fa fa-id-card" :color="scrolled ? 'white' : 'primary'" :size="scrolled || $router.currentRoute.value.name !== 'home' ? undefined : 'x-large'" variant="outlined" @click="$router.push('/profile')">Profile</v-btn>
+					<v-btn v-else prepend-icon="fa fa-right-to-bracket" :color="scrolled ? 'white' : 'primary'" :size="scrolled || $router.currentRoute.value.name !== 'home' ? undefined : 'x-large'" @click="$router.push('/login')">Login</v-btn>
+					<v-btn :icon="$theme.global.current.value.dark ? 'fa fa-sun' : 'fa fa-moon'" @click="toggle" />
+				</template>
 			</v-app-bar>
 
 			<v-navigation-drawer v-model="drawer" class="ps-3" :color="scrolled ? 'default' : 'primary'" rail-width="80" expand-on-hover rail data-simplebar>
-				<v-list v-if="user">
-					<v-list-item prepend-icon="fa fa-user-circle" :title="user?.username" :subtitle="user?.email">
-						<template #append>
-							<v-btn variant="text" icon="fa fa-pen" @click="$router.push('/profile')" />
-						</template>
+				<template v-if="user">
+					<v-list>
+						<v-list-item prepend-icon="fa fa-user-circle" :title="user?.username" :subtitle="user?.email">
+							<template #append>
+								<v-btn variant="text" icon="fa fa-pen" @click="$router.push('/profile')" />
+							</template>
 
-						<v-progress-linear v-if="!user?.username" color="primary" rounded indeterminate />
-					</v-list-item>
-				</v-list>
+							<v-progress-linear v-if="!user?.username" color="primary" rounded indeterminate />
+						</v-list-item>
+					</v-list>
+
+					<v-divider />
+
+					<v-list density="default" nav>
+						<v-list-item prepend-icon="fa fa-id-card" title="Profile" @click="$router.push('/profile')" />
+						<v-list-item v-if="user.roles?.includes('ROLE_ADMIN')" prepend-icon="fa fa-gauge" title="Admin Panel" @click="$router.push('/admin')" />
+						<v-list-item prepend-icon="fa fa-sign-out-alt" title="Logout" @click.prevent="logout" />
+					</v-list>
+				</template>
 
 				<v-list v-else>
 					<v-list-item prepend-icon="fa fa-sign-in-alt" title="Login" @click="$router.push('/login')" />
-				</v-list>
-
-				<v-divider />
-
-				<v-list density="default" nav>
-					<v-list-item prepend-icon="fa fa-id-card" title="Profile" @click="$router.push('/profile')" />
-					<v-list-item v-if="user.roles?.includes('ROLE_ADMIN')" prepend-icon="fa fa-gauge" title="Admin Panel" @click="$router.push('/admin')" />
-					<v-list-item prepend-icon="fa fa-sign-out-alt" title="Logout" @click.prevent="logout" />
+					<v-list-item prepend-icon="fa fa-user-plus" title="Register" @click="$router.push('/register')" />
 				</v-list>
 
 				<v-divider />
@@ -203,8 +208,16 @@ const resendVerificationEmail = () => {
 				</template> -->
 			</v-navigation-drawer>
 
+			<v-snackbar :="$utilsStore.toast" elevation="24" transition="slide-y-transition">
+				{{ $utilsStore.toast.text }}
+
+				<template #actions>
+					<v-btn icon="fa fa-times" color="white" @click="$utilsStore.hideToast()" />
+				</template>
+			</v-snackbar>
+
 			<v-main style="--v-layout-top: 48px;">
-				<v-banner v-if="user && user?.status === 0" class="align-center" lines="one" icon="$info" color="info" sticky>
+				<v-banner v-if="user && user?.status === 0" class="align-center" icon="$info" color="info" lines="one" sticky>
 					<v-banner-text>
 						You need to verify your email address before you can continue.
 					</v-banner-text>

@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { computed, onBeforeUnmount, ref } from 'vue'
-import { useI18n } from 'vue-i18n'
+import { onBeforeUnmount, ref, watchEffect } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 
+import { useUtilsStore } from '@/store'
 import type { Event } from '@/types/event'
 import { useEventListStore } from '@/store/event/list'
 import EventCard from '@/components/custom/EventCard.vue'
@@ -13,11 +13,11 @@ import DataIterator from '@/components/custom/DataIterator.vue'
 
 const parallax = new URL('@/assets/stadium.jpeg', import.meta.url).href
 
-const { t } = useI18n()
 const $router = useRouter()
+const { setLoading } = useUtilsStore()
 
 const deleteStore = useEventDeleteStore()
-const { deleted, mercureDeleted } = storeToRefs(deleteStore)
+// const { deleted, mercureDeleted } = storeToRefs(deleteStore)
 
 const store = useEventListStore()
 const { items, totalItems, error, isLoading } = storeToRefs(store)
@@ -33,8 +33,8 @@ useMercureList({ store, deleteStore })
 sendRequest().then(() => {
 	items.value.map((event: Event) => {
 		event.schedules = event.schedules
-		.filter(s => Date.now() < new Date(s.date).getTime())
-		.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
+			.filter(s => Date.now() < new Date(s.date).getTime())
+			.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 	})
 
 	const eventsWithSchedules = items.value.filter(event => event.schedules.length > 0)
@@ -57,11 +57,10 @@ sendRequest().then(() => {
 // const goToShowPage = (item: Event) => $router.push({ name: 'EventShow', params: { id: item.id } })
 
 onBeforeUnmount(() => deleteStore.$reset())
+watchEffect(() => setLoading(isLoading.value))
 </script>
 
 <template>
-	<v-progress-linear :active="isLoading" color="white" height="4" indeterminate />
-
 	<v-parallax class="snap" :src="parallax">
 		<div class="d-flex flex-column fill-height justify-center align-center">
 			<div class="text-h2 font-weight-thin mb-4">Find your next event</div>
