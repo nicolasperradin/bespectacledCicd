@@ -1,60 +1,56 @@
 <script setup lang="ts">
-import { computed, onBeforeMount, reactive, ref, watch } from 'vue'
-import { useVuelidate } from '@vuelidate/core'
-import { email, minLength, maxLength, required, sameAs } from '@vuelidate/validators'
-
-import * as yup from 'yup'
+import { onBeforeMount, reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useAuthStore } from '@/store'
+import { useVuelidate } from '@vuelidate/core'
+import { email, maxLength, minLength, required, sameAs } from '@vuelidate/validators'
+
+import { useAuthStore, useUtilsStore } from '@/store'
+import { storeToRefs } from 'pinia'
 
 const $router = useRouter()
 const $store = useAuthStore()
+const $utilsStore = useUtilsStore()
+
+const { user, error, violations } = storeToRefs($store)
 
 const parallax = new URL('@/assets/carnival.jpeg', import.meta.url).href
 
 const valid = ref(true)
-const message = ref('')
-const loading = ref(false)
-const user = ref($store.user)
+// const user = ref($store.user)
 const showPassword = ref(false)
 const inputs = reactive({ username: '', email: '', password: '', confirmPassword: '' })
 const form = ref<null | typeof import('vuetify/components')['VForm']>(null)
-const toast = computed(() => { return { state: !!message.value, color: 'success' } })
-
-const errors = reactive({ username: '', email: '', password: '', confirmPassword: '' })
 
 const rules = {
 	username: { required, minLength: minLength(3), maxLength: maxLength(20) },
 	email: { required, email, maxLength: maxLength(50) },
-	password: { required, minLength: minLength(6), maxLength: maxLength(40) },
-	confirmPassword: { required, sameAsRawValue: sameAs(inputs.password) }
+	password: { required, minLength: minLength(7), maxLength: maxLength(40) },
+	// sameAs validator is broken for some reason so I'm using a custom one instead
+	confirmPassword: { required, sameAs: {
+		$validator: (value: string) => value === inputs.password,
+		$message: 'Passwords do not match'
+	} }
 }
 
 const v$ = useVuelidate(rules, inputs)
 
-// TODO handle this in the router.onBeforeEach hook instead
-onBeforeMount(() => user.value && $router.push('/profile'))
+onBeforeMount(() => user?.value && $router.push('/profile'))
 
-watch(message, val => val && setTimeout(() => message.value = '', 3000))
-watch(valid, valid => console.log('valid', valid))
-
-const handleRegister = async (user: any) => {
+const handleRegister = async (payload: any) => {
 	if (!valid.value) return
 
-	loading.value = true
+	$utilsStore.setLoading(true)
 
 	try {
-		const data = await $store.register(user)
-		toast.value.color = 'success'
-		message.value = 'Register successful!'
-		$router.push('/login')
-		// $router.go(0)
-		// await $store.dispatch('auth/login', user)
+		await $store.register(payload)
+		if (!user?.value) return
+		$utilsStore.showToast('Register successful!')
+		$router.push({ name: 'login' })
+		// $router.push({ name: 'home' })
 	} catch (err: any) {
-		toast.value.color = 'danger'
-		message.value = err?.response?.data?.message || err.message || err.toString()
+		$utilsStore.showToast('Account creation failed!', 'danger')
 	} finally {
-		loading.value = false
+		$utilsStore.setLoading(false)
 	}
 }
 </script>
@@ -67,19 +63,19 @@ const handleRegister = async (user: any) => {
 		</div>
 	</v-parallax>
 
-	<v-snackbar v-model="toast.state" :timeout="2000" :color="toast.color" elevation="24">{{ message }}</v-snackbar>
-
-	<v-card :disabled="loading || !inputs" :loading="loading || !inputs">
+	<v-card :disabled="$utilsStore.isLoading || !inputs">
 		<v-form ref="form" v-model="valid" @submit.prevent="handleRegister(inputs)">
 			<v-card-text>
 				<v-row>
 					<v-col cols="12" sm="6">
 						<v-text-field
 							v-model="inputs.username"
-							:error-messages="v$.username?.$errors.map((e: any) => e.$message)"
+							:error="Boolean(violations?.username)"
+							:error-messages="violations?.username || v$.username?.$errors.map((e: any) => e.$message)"
 							:counter="20"
 							label="Username*"
 							required
+							clearable
 							@input="v$.username.$touch"
 							@blur="v$.username.$touch"
 						/>
@@ -88,11 +84,13 @@ const handleRegister = async (user: any) => {
 					<v-col cols="12" sm="6">
 						<v-text-field
 							v-model="inputs.email"
-							:error-messages="v$.email?.$errors.map((e: any) => e.$message)"
+							:error="Boolean(violations?.email)"
+							:error-messages="violations?.email || v$.email?.$errors.map((e: any) => e.$message)"
 							:counter="50"
 							label="Email*"
 							type="email"
 							required
+							clearable
 							@input="v$.email.$touch"
 							@blur="v$.email.$touch"
 						/>
@@ -101,11 +99,13 @@ const handleRegister = async (user: any) => {
 					<v-col cols="12" sm="6">
 						<v-text-field
 							v-model="inputs.password"
-							:error-messages="v$.password?.$errors.map((e: any) => e.$message)"
+							:error="Boolean(violations?.password)"
+							:error-messages="violations?.password || v$.password?.$errors.map((e: any) => e.$message)"
 							:counter="40"
 							label="Password*"
 							:type="showPassword ? 'text' : 'password'"
 							required
+							clearable
 							@input="v$.password.$touch"
 							@blur="v$.password.$touch"
 							:append-inner-icon="inputs.password && (showPassword ? 'fa fa-eye-slash' : 'fa fa-eye')"
@@ -116,10 +116,15 @@ const handleRegister = async (user: any) => {
 					<v-col cols="12" sm="6">
 						<v-text-field
 							v-model="inputs.confirmPassword"
+							:error="Boolean(violations?.confirmPassword)"
+							:error-messages="violations?.confirmPassword || v$.confirmPassword?.$errors.map((e: any) => e.$message)"
 							:counter="40"
 							label="Confirm Password*"
 							type="password"
 							required
+							clearable
+							@input="v$.confirmPassword.$touch"
+							@blur="v$.confirmPassword.$touch"
 						/>
 					</v-col>
 				</v-row>
@@ -127,9 +132,11 @@ const handleRegister = async (user: any) => {
 
 			<v-card-actions>
 				<v-btn color="primary" variant="tonal" @click="$router.push('/login')">Already registered?</v-btn>
+
 				<v-spacer />
-				<v-btn color="primary" @click="form?.reset()" type="reset">Reset</v-btn>
-				<v-btn :disabled="!inputs.username || !inputs.email || !inputs.password || !inputs.confirmPassword" color="primary" variant="elevated" type="submit" @click="v$.$validate">Register</v-btn>
+
+				<v-btn :disabled="!v$.$anyDirty" color="primary" @click="form?.reset()" type="reset">Reset</v-btn>
+				<v-btn :loading="$utilsStore.isLoading" color="primary" variant="elevated" type="submit" @click="v$.$validate">Register</v-btn>
 			</v-card-actions>
 		</v-form>
 	</v-card>

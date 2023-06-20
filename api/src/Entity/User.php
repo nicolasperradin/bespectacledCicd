@@ -14,8 +14,10 @@ use ApiPlatform\Metadata\ApiResource;
 use ApiPlatform\Metadata\GetCollection;
 use App\Controller\ResetPasswordAction;
 use Doctrine\Common\Collections\Collection;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use Doctrine\Common\Collections\ArrayCollection;
 use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
+use ApiPlatform\Doctrine\Orm\Filter\BooleanFilter;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -72,8 +74,11 @@ use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
         // )
     ]
 )]
+#[ApiFilter(BooleanFilter::class)]
 #[ApiFilter(SearchFilter::class, strategy: 'ipartial')]
+#[ApiFilter(OrderFilter::class, properties: ['id' => 'DESC', 'username' => 'ASC'])]
 #[ORM\HasLifecycleCallbacks]
+#[ORM\Table(name: "`user`")]
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[UniqueEntity('email', message: 'This email is already used.')]
 class User implements UserInterface, PasswordAuthenticatedUserInterface
@@ -111,8 +116,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     )]
     private ?string $password = null;
 
-    #[Assert\NotBlank]
-    #[Groups('user:write')]
+    // #[Assert\NotBlank]
+    // #[Groups('user:write')]
     #[SerializedName('password')]
     private ?string $plainPassword = null;
 
@@ -122,14 +127,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     #[ORM\Column(length: 40, nullable: true)]
     private ?string $confirmationToken = null;
-
-    #[ORM\Column]
-    #[Groups('user:read')]
-    private ?\DateTimeImmutable $createdAt = null;
-
-    #[ORM\Column]
-    #[Groups('user:read')]
-    private ?\DateTimeImmutable $updatedAt = null;
 
     #[ORM\Column(name: 'password_change_date', type: 'integer', nullable: true)]
     private $passwordChangeDate;
@@ -146,7 +143,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         message: "Password must be seven characters long and contain at least one digit, one upper case letter and one lower case letter"
     )]
     private $newPassword;
-
 
     #[Groups('user:reset:password')]
     #[Assert\NotBlank(groups: ['user:reset:password'])]
@@ -172,9 +168,17 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'buyer', targetEntity: Transaction::class)]
     private Collection $transactions;
 
+    #[ORM\Column]
+    #[Groups('user:read')]
+    private ?\DateTimeImmutable $createdAt = null;
+
+    #[ORM\Column]
+    #[Groups('user:read')]
+    private ?\DateTimeImmutable $updatedAt = null;
+
     #[Groups('user:read')]
     #[ORM\Column(type: 'datetime', nullable: true)]
-    private $deletedAt;
+    private ?\DateTimeImmutable $deletedAt = null;
 
     public function __construct()
     {
@@ -183,45 +187,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->tickets = new ArrayCollection();
         $this->bookings = new ArrayCollection();
         $this->transactions = new ArrayCollection();
-    }
-
-    public function getDeletedAt(): ?\DateTimeInterface
-    {
-        return $this->deletedAt;
-    }
-
-    public function setDeletedAt(\DateTimeInterface $deletedAt): self
-    {
-        $this->deletedAt = $deletedAt;
-
-        return $this;
-    }
-
-    /**
-     * @return Collection<int, Event>
-     */
-    public function getEvents(): Collection
-    {
-        return $this->events;
-    }
-
-    public function addEvent(Event $event): self
-    {
-        if (!$this->events->contains($event)) {
-            $this->events->add($event);
-            $event->addArtist($this);
-        }
-
-        return $this;
-    }
-
-    public function removeEvent(Event $event): self
-    {
-        if ($this->events->removeElement($event)) {
-            $event->removeArtist($this);
-        }
-
-        return $this;
     }
 
     public function getId(): ?int
@@ -358,31 +323,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    public function getCreatedAt(): ?\DateTimeInterface
-    {
-        return $this->createdAt;
-    }
-
-    public function setCreatedAt(\DateTimeInterface $createdAt): self
-    {
-        $this->createdAt = $createdAt;
-
-        return $this;
-    }
-
-    public function getUpdatedAt(): ?\DateTimeImmutable
-    {
-        return $this->updatedAt;
-    }
-
-    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): self
-    {
-        $this->updatedAt = $updatedAt;
-
-        return $this;
-    }
-
-
     public function getPasswordChangeDate()
     {
         return $this->passwordChangeDate;
@@ -427,6 +367,33 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setOldPassword($oldPassword)
     {
         $this->oldPassword = $oldPassword;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, Event>
+     */
+    public function getEvents(): Collection
+    {
+        return $this->events;
+    }
+
+    public function addEvent(Event $event): self
+    {
+        if (!$this->events->contains($event)) {
+            $this->events->add($event);
+            $event->addArtist($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEvent(Event $event): self
+    {
+        if ($this->events->removeElement($event)) {
+            $event->removeArtist($this);
+        }
 
         return $this;
     }
@@ -517,6 +484,42 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $transaction->setBuyer(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getCreatedAt(): ?\DateTimeInterface
+    {
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeInterface $createdAt): self
+    {
+        $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(?\DateTimeImmutable $updatedAt): self
+    {
+        $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    public function getDeletedAt(): ?\DateTimeInterface
+    {
+        return $this->deletedAt;
+    }
+
+    public function setDeletedAt(\DateTimeInterface $deletedAt): self
+    {
+        $this->deletedAt = $deletedAt;
 
         return $this;
     }

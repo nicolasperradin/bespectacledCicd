@@ -4,11 +4,11 @@ import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 
 import type { Event } from '@/types/event'
+import { useEventCreateStore } from '@/store'
 import Form from '@/components/event/EventForm.vue'
 import Loading from '@/components/common/Loading.vue'
 import Toolbar from '@/components/common/Toolbar.vue'
 import { useBreadcrumb } from '@/composables/breadcrumb'
-import { useEventCreateStore } from '@/store/event/create'
 
 const router = useRouter()
 const breadcrumb = useBreadcrumb()
@@ -28,7 +28,7 @@ onBeforeUnmount(() => eventCreateStore.$reset())
 	<Toolbar :breadcrumb="breadcrumb" :is-loading="isLoading" />
 
 	<v-container fluid>
-		<v-alert v-if="error" type="error" class="mb-4" closable v-text="error" />
+		<!-- <v-alert v-if="error" type="error" class="mb-4" closable v-text="error" /> -->
 		<Form :errors="violations" @submit="create" />
 	</v-container>
 

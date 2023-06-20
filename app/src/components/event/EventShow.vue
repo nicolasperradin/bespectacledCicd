@@ -1,26 +1,45 @@
 <script setup lang="ts">
-import { onBeforeUnmount, ref } from 'vue'
+import { onBeforeUnmount, ref, watchEffect } from 'vue'
 import { useI18n } from 'vue-i18n'
 import { storeToRefs } from 'pinia'
+import { useDate } from 'vuetify/labs/date'
 import { useRoute, useRouter } from 'vue-router'
 
-import Toolbar from '@/components/common/Toolbar.vue'
+import type { Item } from '@/types/item'
+import type { User } from '@/types/user'
+import type { Event } from '@/types/event'
+import type { Venue } from '@/types/venue'
+import type { Schedule } from '@/types/schedule'
+import ActionCell from '../common/ActionCell.vue'
 import Loading from '@/components/common/Loading.vue'
-import { useEventShowStore } from '@/store/event/show'
+import Toolbar from '@/components/common/Toolbar.vue'
 import { useBreadcrumb } from '@/composables/breadcrumb'
 import { useMercureItem } from '@/composables/mercureItem'
-import { useEventDeleteStore } from '@/store/event/delete'
+import { useMercureList } from '@/composables/mercureList'
+import { useEventStore, useUtilsStore, useUserStore, useVenueStore, useScheduleStore } from '@/store'
 
+const date = useDate()
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const breadcrumb = useBreadcrumb()
+const $utilsStore = useUtilsStore()
 
-const eventShowStore = useEventShowStore()
-const { retrieved: item, isLoading, error } = storeToRefs(eventShowStore)
+const { eventDeleteStore, eventShowStore, eventUpdateStore } = useEventStore()
+const { retrieved: item, isLoading, error: eventError } = storeToRefs(eventShowStore)
+const { deleted: eventDeleted, error: eventDeleteError } = storeToRefs(eventDeleteStore)
 
-const eventDeleteStore = useEventDeleteStore()
-const { deleted, error: deleteError } = storeToRefs(eventDeleteStore)
+// const { venueShowStore, venueDeleteStore } = useVenueStore()
+// const { error: venueError } = storeToRefs(venueShowStore)
+// const { deleted: venueDeleted, error: venueDeleteError } = storeToRefs(venueDeleteStore)
+
+const { userShowStore, userDeleteStore } = useUserStore()
+const { error: userError } = storeToRefs(userShowStore)
+const { deleted: userDeleted, error: userDeleteError } = storeToRefs(userDeleteStore)
+
+const { scheduleShowStore, scheduleDeleteStore } = useScheduleStore()
+const { error: scheduleError } = storeToRefs(scheduleShowStore)
+const { deleted: scheduleDeleted, error: scheduleDeleteError } = storeToRefs(scheduleDeleteStore)
 
 const icons: Record<string, string> = {
 	broadway: 'fa fa-mask',
@@ -28,41 +47,68 @@ const icons: Record<string, string> = {
 	other: 'fa fa-question'
 }
 
-const tab = ref(1)
+const tab = ref(0)
+
+const sendRequest = async () => await eventShowStore.retrieve(decodeURIComponent(route.params.id as string))
 
 useMercureItem({ store: eventShowStore, deleteStore: eventDeleteStore, redirectRouteName: 'EventList' })
+useMercureList({ store: scheduleShowStore, deleteStore: scheduleDeleteStore })
+useMercureList({ store: userShowStore, deleteStore: userDeleteStore })
 
-await eventShowStore.retrieve(decodeURIComponent(route.params.id as string))
+sendRequest()
 
 const goToUpdatePage = (item: any) => router.push({ name: 'EventUpdate', params: { id: item.id } })
 
 const deleteItem = async () => {
 	if (!item?.value) return eventDeleteStore.setError(t('itemNotFound'))
 	await eventDeleteStore.deleteItem(item.value)
-	if (!deleted?.value) return
+	if (!eventDeleted?.value) return
 	router.push({ name: 'EventList' })
 }
 
+const goToRelationShowPage = (model: 'User' | 'Schedule', relation: Item) => router.push({ name: 'ScheduleShow', params: { id: relation.id } })
+const goToRelationCreatePage = (model: 'User' | 'Schedule') => router.push({ name: model + 'Create' })
+const goToRelationUpdatePage = (model: 'User' | 'Schedule', relation: Item) => router.push({ name: model + 'Update', params: { id: relation.id } })
+
+const detachRelation = async (model: 'User' | 'Schedule', relation: User | Schedule) => {
+	if (!item) return
+	if (model === 'User') await eventUpdateStore.update({ ...item.value, artists: item.value?.artists.filter(_ => _.id !== relation.id) } as Event)
+	if (model === 'Schedule') await eventUpdateStore.update({ ...item.value, schedules: item.value?.schedules.filter(_ => _.id !== relation	.id) } as Event)
+	sendRequest()
+}
+
+const deleteRelation = async (model: 'User' | 'Schedule', item: Item) => {
+	if (!item) return
+	if (model === 'User') await userDeleteStore.deleteItem(item as User)
+	if (model === 'Schedule') await scheduleDeleteStore.deleteItem(item as Schedule)
+	sendRequest()
+}
+
 onBeforeUnmount(() => eventShowStore.$reset())
+watchEffect(() => $utilsStore.setLoading(isLoading.value))
 </script>
 
 <template>
 	<Toolbar :actions="['edit', 'delete']" :breadcrumb="breadcrumb" :is-loading="isLoading" @edit="goToUpdatePage(item)" @delete="deleteItem" />
 
 	<v-container fluid>
-		<v-alert v-if="error || deleteError" type="error" class="mb-4" v-text="error || deleteError" closable />
+		<!-- TODO can't delete an artist (needs JWT token in the request), should unassign instead -->
+		<!-- TODO venue and user deletion alerts don't show up -->
+		<!-- TODO remove useless screen loader -->
+		<v-alert v-if="eventError || eventDeleteError" type="error" class="mb-4" v-text="eventError || eventDeleteError" closable />
+		<!-- <v-alert v-if="venueError || venueDeleteError" type="error" class="mb-4" v-text="venueError || venueDeleteError" closable />
+		<v-alert v-if="userError || userDeleteError" type="error" class="mb-4" v-text="userError || userDeleteError" closable /> -->
 
 		<v-tabs v-model="tab" color="primary" fixed-tabs>
-			<v-tab value="1">General</v-tab>
-			<v-tab value="2">Venue</v-tab>
-			<v-tab value="3">Artists</v-tab>
-			<v-tab value="4">Schedules</v-tab>
+			<v-tab value="0" :disabled="!item">General</v-tab>
+			<v-tab value="1" :disabled="!item?.venue">Venue</v-tab>
+			<v-tab value="2" :disabled="!item?.artists">Artists</v-tab>
+			<v-tab value="3" :disabled="!item?.schedules">Schedules</v-tab>
 		</v-tabs>
 
 		<v-window v-model="tab">
-			<v-window-item value="1">
-				<!-- TODO replace html tags? -->
-				<v-table v-if="item">
+			<v-window-item v-if="item" value="0">
+				<v-table>
 					<thead>
 						<tr>
 							<th>{{ $t('field') }}</th>
@@ -73,8 +119,14 @@ onBeforeUnmount(() => eventShowStore.$reset())
 					<tbody>
 						<tr>
 							<td>{{ $t('event.src') }}</td>
-							<td><v-img :src="item.src" max-width="100" max-height="100" /></td>
-							<!-- <td>{{ item.src }}</td> -->
+
+							<td>
+								<v-tooltip :text="item.src">
+									<template #activator="{ props }">
+										<v-img :="props" :src="item.src" max-width="100" max-height="100" />
+									</template>
+								</v-tooltip>
+							</td>
 						</tr>
 
 						<tr>
@@ -89,97 +141,185 @@ onBeforeUnmount(() => eventShowStore.$reset())
 
 						<tr>
 							<td>{{ $t('event.price') }}</td>
-							<td>{{ item.price }}</td>
+							<td>${{ item.price }}</td>
+						</tr>
+					</tbody>
+				</v-table>
+			</v-window-item>
+
+			<v-window-item v-if="item?.venue" value="1">
+				<v-table>
+					<thead>
+						<tr>
+							<th>{{ $t('field') }}</th>
+							<th>{{ $t('value') }}</th>
+						</tr>
+					</thead>
+
+					<tbody>
+						<tr>
+							<td>{{ $t('venue.src') }}</td>
+
+							<td>
+								<v-tooltip :text="item.src">
+									<template #activator="{ props }">
+										<v-img :src="item.venue.src" max-width="100" max-height="100" />
+										<router-link v-if="router.hasRoute('VenueShow')" :="props" :to="{ name: 'VenueShow', params: { id: item.venue.id } }">
+										</router-link>
+
+										<v-img v-else :="props" :src="item.venue.src" max-width="100" max-height="100" />
+									</template>
+								</v-tooltip>
+							</td>
 						</tr>
 
 						<tr>
-							<td>{{ $t('event.venue') }}</td>
+							<td>{{ $t('venue.name') }}</td>
 
 							<td>
-								<router-link v-if="router.hasRoute('VenueShow')" :to="{ name: 'VenueShow', params: { id: item.venue } }">
-									<v-img :src="item.venue.src" max-width="100" max-height="100" />
-								</router-link>
+								<template v-if="router.hasRoute('VenueShow')">
+									<router-link :to="{ name: 'VenueShow', params: { id: item.venue.id } }" v-text="item.venue.name" />
+								</template>
 
-								<p v-else><v-img :src="item.venue.src" max-width="100" max-height="100" /></p>
+								<template v-else>{{ item.venue.name }}</template>
 							</td>
 						</tr>
 
 						<tr>
-							<td>
-								{{ $t('event.artists') }}
-							</td>
-
-							<td>
-								<template v-if="router.hasRoute('UserShow')">
-									<router-link v-for="artist in item.artists" :key="artist" :to="{ name: 'UserShow', params: { id: artist } }">
-										<v-chip color="primary" v-text="artist.username" />
-										<br />
-									</router-link>
-								</template>
-
-								<template v-else>
-									<v-chip v-for="artist in item.artists" :key="artist" color="primary" v-text="artist.username" />
-								</template>
-							</td>
+							<td>{{ $t('venue.type') }}</td>
+							<td>{{ item.venue.type }}</td>
 						</tr>
 
-						<!-- TODO should be like above -->
 						<tr>
-							<td>
-								{{ $t('event.schedules') }}
-							</td>
+							<td>{{ $t('venue.price') }}</td>
+							<td>${{ item.venue.price }}</td>
+						</tr>
 
-							<td>
-								<template v-if="router.hasRoute('ScheduleShow')">
-									<router-link v-for="schedule in item.schedules" :key="schedule" :to="{ name: 'ScheduleShow', params: { id: schedule } }">
-										<v-chip color="primary" v-text="schedule.date" />
-										<br />
-									</router-link>
-								</template>
-
-								<template v-else>
-									<v-chip v-for="schedule in item.schedules" :key="schedule.id" color="primary" v-text="schedule.date" />
-								</template>
-							</td>
+						<tr>
+							<td>{{ $t('venue.seats') }}</td>
+							<td>{{ item.venue.seats }}</td>
 						</tr>
 					</tbody>
 				</v-table>
 			</v-window-item>
 
 			<v-window-item value="2">
-				<thead>
-					<tr>
-						<th>{{ $t('field') }}</th>
-						<th>{{ $t('value') }}</th>
-					</tr>
-				</thead>
+				<v-row>
+					<v-col cols="12" sm="6">
+						<v-btn class="w-100 h-100 d-flex justify-center align-center" :min-height="52 * 3" @click="goToRelationCreatePage('User')">
+							<v-icon icon="fa fa-plus-circle" color="success" size="50" />
+						</v-btn>
+					</v-col>
 
-				<tbody>
-				</tbody>
+					<v-hover v-for="artist, i in item?.artists" :key="i" #="{ isHovering, props }" close-delay="200">
+						<v-col :="props" cols="12" sm="6">
+							<v-table>
+								<thead>
+									<tr>
+										<th>{{ artist?.['@type'] }} #{{ i + 1 }}</th>
+
+										<th>
+											<v-fade-transition>
+												<v-row v-if="isHovering">
+													<ActionCell :actions="['show', 'update', 'delete']" @show="goToRelationShowPage('User', artist)" @update="goToRelationUpdatePage('User', artist)" @delete="deleteRelation('User', artist)" />
+
+													<v-spacer />
+
+													<v-tooltip :text="$t('detach')">
+														<template #activator="{ props }">
+															<v-btn v-bind="props" icon="fa fa-minus" color="error" size="x-small" :rounded="false" @click="detachRelation('User', artist)" />
+														</template>
+													</v-tooltip>
+												</v-row>
+											</v-fade-transition>
+										</th>
+									</tr>
+								</thead>
+
+								<tbody>
+									<tr>
+										<td>{{ $t('user.username') }}</td>
+
+										<td>
+											<template v-if="router.hasRoute('UserShow')">
+												<router-link :to="{ name: 'UserShow', params: { id: artist.id } }" v-text="artist.username" />
+											</template>
+
+											<template v-else>{{ artist.username }}</template>
+										</td>
+									</tr>
+
+									<tr>
+										<td>{{ $t('user.email') }}</td>
+										<td>{{ artist.email }}</td>
+									</tr>
+								</tbody>
+							</v-table>
+						</v-col>
+					</v-hover>
+				</v-row>
 			</v-window-item>
 
 			<v-window-item value="3">
-				<thead>
-					<tr>
-						<th>{{ $t('field') }}</th>
-						<th>{{ $t('value') }}</th>
-					</tr>
-				</thead>
+				<v-row>
+					<v-col cols="12" sm="6" md="4">
+						<v-btn class="w-100 h-100 d-flex justify-center align-center" :min-height="52 * 3" @click="goToRelationCreatePage('Schedule')">
+							<v-icon icon="fa fa-plus-circle" color="success" size="50" />
+						</v-btn>
+					</v-col>
 
-				<tbody>
-				</tbody>
-			</v-window-item>
+					<v-hover v-for="day, i in item?.schedules" :key="i" #="{ isHovering, props }" close-delay="200">
+						<v-col :="props" cols="12" sm="6" md="4">
+							<v-table>
+								<thead>
+									<tr>
+										<th>{{ day?.['@type'] }} #{{ i + 1 }}</th>
 
-			<v-window-item value="4">
-				<thead>
-					<tr>
-						<th>{{ $t('field') }}</th>
-						<th>{{ $t('value') }}</th>
-					</tr>
-				</thead>
+										<th>
+											<v-fade-transition>
+												<v-row v-if="isHovering">
+													<ActionCell :actions="['show', 'update', 'delete']" @show="goToRelationShowPage('Schedule', day)" @update="goToRelationUpdatePage('Schedule', day)" @delete="deleteRelation('Schedule', day)" />
 
-				<tbody>
-				</tbody>
+													<v-spacer />
+
+													<v-tooltip :text="$t('detach')">
+														<template #activator="{ props }">
+															<v-btn v-bind="props" icon="fa fa-minus" color="error" size="x-small" :rounded="false" @click="detachRelation('Schedule', day)" />
+														</template>
+													</v-tooltip>
+												</v-row>
+											</v-fade-transition>
+										</th>
+									</tr>
+								</thead>
+
+								<tbody>
+									<tr>
+										<td>{{ $t('schedule.date') }}</td>
+
+										<td>
+											<template v-if="router.hasRoute('ScheduleShow')">
+												<router-link :to="{ name: 'ScheduleShow', params: { id: day.id } }">
+													{{ date.format(day.date, 'normalDateWithWeekday') }}
+												</router-link>
+											</template>
+
+											<p v-bind="props" v-else>{{ date.format(day.date, 'normalDateWithWeekday') }}</p>
+										</td>
+									</tr>
+
+									<tr>
+										<td>{{ $t('schedule.times') }}</td>
+
+										<td>
+											<v-chip v-for="time in day.times" class="me-1" :text="time" />
+										</td>
+									</tr>
+								</tbody>
+							</v-table>
+						</v-col>
+					</v-hover>
+				</v-row>
 			</v-window-item>
 		</v-window>
 	</v-container>

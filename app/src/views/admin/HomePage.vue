@@ -14,7 +14,7 @@ const categories = ref([
 ])
 
 onMounted(async () => {
-	const { data: artists } = await UserService.artists()
+	const { data: artists } = await UserService.all()
 	categories.value[1].children = artists
 
 	const { data: events } = await EventService.all()
@@ -35,10 +35,25 @@ const cards = ref(['Entities'])
 <template>
 	<v-parallax :src="parallax">
 		<div class="d-flex flex-column fill-height justify-center align-center">
-			<div class="text-h2 font-weight-thin mb-4">BeSpectacled Schedule</div>
+			<div class="text-h2 font-weight-thin mb-4">BeSpectacled Admin</div>
 			<div class="text-h4 text-secondary">Manage the website's content</div>
 		</div>
 	</v-parallax>
+
+	<!-- <v-row justify="space-around">
+		<v-col v-for="n in 4" class="text-center" cols="12" sm="6">
+			<v-card class="mx-auto" @click="() => $router.push('/admin/users')">
+				<v-card-item class="w-50">
+					<div>
+						<div class="mb-2 text-overline">OVERLINE</div>
+						<div class="mb-2 text-h5 font-weight-bold">87.365</div>
+						<div class="mb-n2 text-overline">Registrations</div>
+						<div class="text-overline">in the last month</div>
+					</div>
+				</v-card-item>
+			</v-card>
+		</v-col>
+	</v-row> -->
 
 	<v-row>
 		<v-col cols="6">

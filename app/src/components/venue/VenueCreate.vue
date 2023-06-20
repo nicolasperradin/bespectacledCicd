@@ -4,11 +4,11 @@ import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 
 import type { Venue } from '@/types/venue'
+import { useVenueCreateStore } from '@/store'
 import Form from '@/components/venue/VenueForm.vue'
 import Loading from '@/components/common/Loading.vue'
 import Toolbar from '@/components/common/Toolbar.vue'
 import { useBreadcrumb } from '@/composables/breadcrumb'
-import { useVenueCreateStore } from '@/store/venue/create'
 
 const router = useRouter()
 const breadcrumb = useBreadcrumb()

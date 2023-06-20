@@ -3,18 +3,16 @@ import { onBeforeUnmount, ref, watchEffect } from 'vue'
 import { storeToRefs } from 'pinia'
 import { useRouter } from 'vue-router'
 
-import { useUtilsStore } from '@/store'
 import type { Event } from '@/types/event'
-import { useEventListStore } from '@/store/event/list'
 import EventCard from '@/components/custom/EventCard.vue'
 import { useMercureList } from '@/composables/mercureList'
-import { useEventDeleteStore } from '@/store/event/delete'
 import DataIterator from '@/components/custom/DataIterator.vue'
+import { useEventDeleteStore, useEventListStore, useUtilsStore } from '@/store'
 
 const parallax = new URL('@/assets/stadium.jpeg', import.meta.url).href
 
 const $router = useRouter()
-const { setLoading } = useUtilsStore()
+const $utilsStore = useUtilsStore()
 
 const deleteStore = useEventDeleteStore()
 // const { deleted, mercureDeleted } = storeToRefs(deleteStore)
@@ -57,7 +55,7 @@ sendRequest().then(() => {
 // const goToShowPage = (item: Event) => $router.push({ name: 'EventShow', params: { id: item.id } })
 
 onBeforeUnmount(() => deleteStore.$reset())
-watchEffect(() => setLoading(isLoading.value))
+watchEffect(() => $utilsStore.setLoading(isLoading.value))
 </script>
 
 <template>

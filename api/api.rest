@@ -35,6 +35,11 @@ GET {{baseUrl}}/users?roles[]=ROLE_ARTIST
 accept: application/json
 Authorization: Bearer {{token}}
 
+### Search artists
+GET {{baseUrl}}/users?order[username]=desc&roles[]=ROLE_ARTIST&events[]=Bil
+accept: application/json
+Authorization: Bearer {{token}}
+
 ### Create user
 POST {{baseUrl}}/users
 Content-Type: application/json

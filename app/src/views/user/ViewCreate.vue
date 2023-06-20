@@ -7,5 +7,5 @@
 </template>
 
 <script setup lang="ts">
-import Create from "@/components/user/UserCreate.vue";
+import Create from "@/components/user/UserCreate";
 </script>

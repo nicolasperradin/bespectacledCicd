@@ -5,11 +5,15 @@ import type { BreadcrumbValue } from '@/types/breadcrumb'
 
 const { t } = useI18n()
 const props = defineProps<{ breadcrumb: BreadcrumbValue[] }>()
-const items = [{ title: t('admin'), to: '/admin' }, ...props.breadcrumb]
+const items = [{ title: t('admin'), href: '/admin' }, ...props.breadcrumb]
 </script>
 
 <template>
-	<v-breadcrumbs :items="items" />
+	<v-breadcrumbs class="m-0" :items="items" active-color="disabled">
+		<template #divider>
+			<v-icon icon="fa fa-arrow-right" />
+		</template>
+	</v-breadcrumbs>
 </template>
 
 <style>

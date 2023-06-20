@@ -50,17 +50,17 @@ class Venue
 
     #[ORM\Column]
     #[Assert\NotBlank]
-    #[Groups(['venue:read', 'venue:write'])]
+    #[Groups(['venue:read', 'venue:write', 'event:read'])]
     private ?string $type = null;
 
     #[ORM\Column]
     #[Assert\NotBlank]
-    #[Groups(['venue:read', 'venue:write'])]
+    #[Groups(['venue:read', 'venue:write', 'event:read'])]
     private ?int $seats = null;
 
     #[ORM\Column]
     #[Assert\NotBlank, Assert\Positive]
-    #[Groups(['venue:read', 'venue:write'])]
+    #[Groups(['venue:read', 'venue:write', 'event:read'])]
     private ?float $price = null;
 
     #[ORM\Column]

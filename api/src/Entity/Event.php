@@ -3,10 +3,13 @@
 namespace App\Entity;
 
 use Doctrine\ORM\Mapping as ORM;
+use ApiPlatform\Metadata\ApiFilter;
 use App\Repository\EventRepository;
 use ApiPlatform\Metadata\ApiResource;
 use Doctrine\Common\Collections\Collection;
+use ApiPlatform\Doctrine\Orm\Filter\OrderFilter;
 use Doctrine\Common\Collections\ArrayCollection;
+use ApiPlatform\Doctrine\Orm\Filter\SearchFilter;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
@@ -17,10 +20,12 @@ use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
     normalizationContext: ['groups' => ['event:read']],
     denormalizationContext: ['groups' => ['event:write']]
 )]
+#[ApiFilter(SearchFilter::class, strategy: 'ipartial')]
+#[ApiFilter(OrderFilter::class, properties: ['id' => 'DESC', 'title' => 'ASC', 'type' => 'ASC', 'price' => 'ASC', 'venue.name' => 'ASC'])]
 class Event
 {
     #[ORM\Id, ORM\Column, ORM\GeneratedValue]
-    #[Groups(['event:read', 'venue:read'])]
+    #[Groups(['event:read', 'venue:read', 'user:read'])]
     private ?int $id = null;
 
     #[ORM\Column]
@@ -59,7 +64,7 @@ class Event
     private Collection $artists;
 
     #[Groups(['event:read', 'event:write'])]
-    #[ORM\OneToMany(targetEntity: Schedule::class, mappedBy: 'event')]
+    #[ORM\OneToMany(targetEntity: Schedule::class, mappedBy: 'event', orphanRemoval: true)]
     private Collection $schedules;
 
     // #[Groups(['event:read', 'event:write'])]

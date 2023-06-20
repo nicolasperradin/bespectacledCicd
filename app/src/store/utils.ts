@@ -44,6 +44,7 @@ export const useUtilsStore = defineStore('utils', {
 		},
 		showBanner(text: string, color: State['banner']['color'] = 'success', action: State['banner']['action'] = null) {
 			this.banner = { modelValue: true, text, color, action }
+			setTimeout(() => this.hideBanner(), 5000)
 		},
 		hideBanner() {
 			this.banner = initialState.banner

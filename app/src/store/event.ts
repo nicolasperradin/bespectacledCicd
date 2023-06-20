@@ -328,3 +328,11 @@ export const useEventUpdateStore = defineStore('eventUpdate', {
 		}
 	}
 })
+
+export const useEventStore = () => ({
+	eventListStore: useEventListStore(),
+	eventShowStore: useEventShowStore(),
+	eventCreateStore: useEventCreateStore(),
+	eventUpdateStore: useEventUpdateStore(),
+	eventDeleteStore: useEventDeleteStore()
+})

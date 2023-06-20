@@ -1,3 +1,4 @@
 export interface BreadcrumbValue {
-	name: string
+	title: string
+	to: { name: string }
 }

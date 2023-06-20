@@ -5,14 +5,11 @@ import type { BreadcrumbValue } from '@/types/breadcrumb'
 import Breadcrumb from '@/components/common/Breadcrumb.vue'
 import ConfirmDelete from '@/components/common/ConfirmDelete.vue'
 
-const props = defineProps<{
+defineProps<{
 	actions?: ('submit' | 'reset' | 'delete' | 'add' | 'edit')[]
 	isLoading: boolean
 	breadcrumb: BreadcrumbValue[]
 }>()
-
-// TODO remove if not needed (see ActionCell.vue)
-const { actions } = toRefs(props)
 
 const emit = defineEmits<{
 	(e: 'submit'): void
@@ -26,23 +23,15 @@ const confirm = ref(false)
 </script>
 
 <template>
-	<v-toolbar class="px-4 d-flex justify-space-around" elevation="0">
+	<v-toolbar class="mb-4 sticky-top sticky-nav" color="pink-accent-4" dark rounded>
 		<Breadcrumb :breadcrumb="breadcrumb" />
 
 		<v-spacer />
 
-		<div>
-			<v-btn v-if="actions?.includes('add')" icon="fa fa-plus-circle" color="primary" @click="emit('add')" />
+		<v-btn v-if="actions?.includes('add')" class="fill-height m-0 bg-success rounded-0" prepend-icon="fa fa-plus-circle" :text="$t('add')" @click="emit('add')" />
+		<v-btn v-if="actions?.includes('edit')" class="fill-height m-0 bg-warning rounded-0" prepend-icon="fa fa-pen-to-square" :text="$t('edit')" @click="emit('edit')" />
+		<v-btn v-if="actions?.includes('delete')" class="fill-height m-0 bg-danger rounded-0" prepend-icon="fa fa-trash-can" :text="$t('delete')" @click="confirm = !confirm" />
 
-			<v-btn v-if="actions?.includes('edit')" color="warning" class="ml-sm-2" @click="emit('edit')">
-				{{ $t('edit') }}
-			</v-btn>
-
-			<v-btn v-if="actions?.includes('delete')" color="error" class="ml-sm-2" @click="confirm = !confirm">
-				{{ $t('delete') }}
-			</v-btn>
-		</div>
-
-		<ConfirmDelete v-if="actions?.includes('delete')" :show="confirm" @delete="emit('delete')" @cancel="confirm = !confirm" />
+		<ConfirmDelete v-if="actions?.includes('delete')" :show="confirm" @delete="() => { confirm = !confirm; emit('delete') }" @cancel="confirm = !confirm" />
 	</v-toolbar>
 </template>

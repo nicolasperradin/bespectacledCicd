@@ -7,10 +7,9 @@ import { useRoute, useRouter } from 'vue-router'
 import type { Venue } from '@/types/venue'
 import Toolbar from '@/components/common/Toolbar.vue'
 import Loading from '@/components/common/Loading.vue'
-import { useVenueShowStore } from '@/store/venue/show'
 import { useBreadcrumb } from '@/composables/breadcrumb'
 import { useMercureItem } from '@/composables/mercureItem'
-import { useVenueDeleteStore } from '@/store/venue/delete'
+import { useVenueDeleteStore, useVenueShowStore } from '@/store'
 
 const { t } = useI18n()
 const route = useRoute()
@@ -103,7 +102,7 @@ onBeforeUnmount(() => venueShowStore.$reset())
 
 							<td>
 								<template v-if="router.hasRoute('EventShow')">
-									<router-link v-for="event in item.events" :key="event" :to="{ name: 'EventShow', params: { id: event } }">
+									<router-link v-for="event, i in item.events" :key="i" :to="{ name: 'EventShow', params: { id: event.id } }">
 										<v-chip color="primary" v-text="event.title" />
 										<br />
 									</router-link>

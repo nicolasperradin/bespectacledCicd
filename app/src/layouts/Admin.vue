@@ -6,8 +6,7 @@ import { useRouter } from 'vue-router'
 import UserService from '@/services/user.service'
 import EventService from '@/services/event.service'
 import VenueService from '@/services/venue.service'
-import { useAuthStore, useUtilsStore } from '@/store'
-import { useEventListStore } from '@/store/event/list'
+import { useAuthStore, useEventListStore, useUtilsStore } from '@/store'
 
 const $theme = useTheme()
 const $router = useRouter()
@@ -31,7 +30,7 @@ onBeforeMount(() => $theme.global.name.value = $utilsStore.dark ? 'dark' : 'ligh
 
 onMounted(async () => {
 	const { data: users } = await UserService.all()
-	categories.value.find(c => c.name === 'Artists').children = users
+	categories.value.find(c => c.name === 'Users').children = users
 
 	// const { data: events } = await $eventListStore.getItems()
 	const { data: events } = await EventService.all()
@@ -39,7 +38,7 @@ onMounted(async () => {
 
 	const { data: venues } = await VenueService.all()
 	categories.value.find(c => c.name === 'Venues').children = venues
-	console.log(events)
+	// console.log(events)
 })
 
 const filteredCategories = computed(() => {
@@ -63,7 +62,7 @@ const resendVerificationEmail = () => {
 </script>
 
 <template>
-	<v-app dark>
+	<v-app :dark="$utilsStore.dark">
 		<v-app-bar color="pink-accent-4" density="compact" app>
 			<template #prepend>
 				<v-app-bar-nav-icon @click.stop="drawer = !drawer" />

@@ -1,9 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 
-// import user from './user'
+import user from './user'
 import event from './event'
 import venue from './venue'
-// import schedule from './schedule'
+import schedule from './schedule'
 import { useAuthStore } from '@/store'
 
 // beforeEnter: [to => { ...to, query: {} }, { ...to, hash: '' }],
@@ -18,10 +18,10 @@ const routes = [
 	{
 		path: '/admin/', component: () => import('@/layouts/Admin.vue'), meta: { requires: 'admin' }, children: [
 			{ path: '', name: 'admin', component: () => import('@/views/admin/HomePage.vue') },
-			// ...user,
+			...user,
 			...event,
 			...venue,
-			// ...schedule
+			...schedule
 		]
 	},
 	{

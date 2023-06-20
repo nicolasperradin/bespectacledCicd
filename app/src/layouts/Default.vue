@@ -3,25 +3,28 @@ import { computed, onBeforeMount, onMounted, onUnmounted, ref } from 'vue'
 import { useTheme } from 'vuetify'
 import { useRouter } from 'vue-router'
 
+import { useAuthStore, useUtilsStore } from '@/store'
+import Carousel from '@/components/custom/Carousel.vue'
+
 import UserService from '@/services/user.service'
 import EventService from '@/services/event.service'
 import VenueService from '@/services/venue.service'
-import { useAuthStore, useUtilsStore } from '@/store'
-import Carousel from '@/components/custom/Carousel.vue'
+import { storeToRefs } from 'pinia'
 
 const $theme = useTheme()
 const $router = useRouter()
 const $store = useAuthStore()
 const $utilsStore = useUtilsStore()
 
+const { user, error } = storeToRefs($store)
+
 const tab = ref(null)
 const search = ref('')
 const dialog = ref(false)
 const drawer = ref(false)
 const scrolled = ref(false)
-const user = ref($store.user)
 
-const types = ['broadway']
+user.value = JSON.parse(localStorage.getItem('user') || 'null')
 
 const icons = {
 	broadway: 'fa fa-mask',
@@ -41,6 +44,40 @@ const categories = ref([
 	{ name: 'Ticketing', icon: 'fa fa-ticket', to: '/ticketing' }
 ])
 
+const filteredCategories = computed(() => {
+	return categories.value.filter(c => c?.children?.length > 0).map(c => {
+		return { ...c, children: c.children.filter(child => child[c.key].toLowerCase().includes(search.value.toLowerCase())) }
+	})
+})
+
+const sendRequest = async () => {
+	await useEventListStore().getItems({ page: page.value, order: order.value })
+
+	// Make a promise all to get all the data when it's available
+	const [artists, events, venues] = await Promise.all([
+		useUserListStore().getItems({ page: page.value, order: order.value }),
+		useEventListStore().getItems({ page: page.value, order: order.value }),
+		useVenueListStore().getItems({ page: page.value, order: order.value })
+	])
+}
+
+const registerShortcuts = e => {
+	if (e.key === '/') dialog.value = true
+	if (e.ctrlKey && e.altKey && e.key === 't') toggle()
+}
+
+const toggle = () => {
+	$utilsStore.toggle()
+	$theme.global.name.value = $utilsStore.dark ? 'dark' : 'light'
+}
+
+const logout = () => $store.logout()
+
+const resendVerificationEmail = () => {
+	// TODO $store.dispatch('auth/resendVerificationEmail')
+	alert('This feature has not been implemented yet.')
+}
+
 onBeforeMount(() => $theme.global.name.value = $utilsStore.dark ? 'dark' : 'light')
 
 onMounted(async () => {
@@ -59,29 +96,6 @@ onMounted(async () => {
 })
 
 onUnmounted(() => window.removeEventListener('keydown', registerShortcuts))
-
-const filteredCategories = computed(() => {
-	return categories.value.filter(c => c?.children?.length > 0).map(c => {
-		return { ...c, children: c.children.filter(child => child[c.key].toLowerCase().includes(search.value.toLowerCase())) }
-	})
-})
-
-const registerShortcuts = e => {
-	if (e.key === '/') dialog.value = true
-	if (e.ctrlKey && e.altKey && e.key === 't') toggle()
-}
-
-const toggle = () => {
-	$utilsStore.toggle()
-	$theme.global.name.value = $utilsStore.dark ? 'dark' : 'light'
-}
-
-const logout = () => $store.logout()
-
-const resendVerificationEmail = () => {
-	// TODO $store.dispatch('auth/resendVerificationEmail')
-	alert('This feature has not been implemented yet.')
-}
 </script>
 
 <template>
@@ -208,6 +222,7 @@ const resendVerificationEmail = () => {
 				</template> -->
 			</v-navigation-drawer>
 
+			<!-- Message Toast -->
 			<v-snackbar :="$utilsStore.toast" elevation="24" transition="slide-y-transition">
 				{{ $utilsStore.toast.text }}
 

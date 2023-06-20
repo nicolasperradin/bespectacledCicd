@@ -13,8 +13,10 @@ App\Entity\User:
     roles: "[ROLE_ARTIST]"
     password: <{hash}>
     username: <username()>
+    enabled: true
   user{1..5}:
     email: 'user<current()>\@root.com'
     roles: "[ROLE_USER]"
     password: <{hash}>
     username: <username()>
+    enabled: true

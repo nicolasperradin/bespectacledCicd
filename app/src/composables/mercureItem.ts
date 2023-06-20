@@ -5,7 +5,6 @@ import type { StoreGeneric } from 'pinia'
 import type { Item } from '@/types/item'
 import { mercureSubscribe } from '@/utils/mercure'
 
-// TODO like here, put types on the same line in other files
 export function useMercureItem({ store, deleteStore, redirectRouteName }: { store: StoreGeneric, deleteStore: StoreGeneric, redirectRouteName: string }) {
 	const router = useRouter()
 

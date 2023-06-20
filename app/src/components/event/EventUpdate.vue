@@ -4,28 +4,28 @@ import { useI18n } from 'vue-i18n'
 import { storeToRefs } from 'pinia'
 import { useRoute, useRouter } from 'vue-router'
 
+import { useEventStore } from '@/store'
 import type { Event } from '@/types/event'
 import Form from '@/components/event/EventForm.vue'
 import Loading from '@/components/common/Loading.vue'
 import Toolbar from '@/components/common/Toolbar.vue'
 import { useBreadcrumb } from '@/composables/breadcrumb'
 import { useMercureItem } from '@/composables/mercureItem'
-import { useEventCreateStore } from '@/store/event/create'
-import { useEventDeleteStore } from '@/store/event/delete'
-import { useEventUpdateStore } from '@/store/event/update'
 
 const { t } = useI18n()
 const route = useRoute()
 const router = useRouter()
 const breadcrumb = useBreadcrumb()
 
-const eventCreateStore = useEventCreateStore()
+const { eventCreateStore, eventUpdateStore, eventDeleteStore } = useEventStore()
+
+// const eventCreateStore = useEventCreateStore()
 const { created } = storeToRefs(eventCreateStore)
 
-const eventDeleteStore = useEventDeleteStore()
+// const eventDeleteStore = useEventDeleteStore()
 const { isLoading: deleteLoading, error: deleteError } = storeToRefs(eventDeleteStore)
 
-const eventUpdateStore = useEventUpdateStore()
+// const eventUpdateStore = useEventUpdateStore()
 const { retrieved: item, updated, isLoading, error, violations, } = storeToRefs(eventUpdateStore)
 
 const icons: Record<string, string> = {

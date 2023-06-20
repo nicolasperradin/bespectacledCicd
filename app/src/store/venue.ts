@@ -328,3 +328,11 @@ export const useVenueUpdateStore = defineStore('venueUpdate', {
 		}
 	}
 })
+
+export const useVenueStore = () => ({
+	venueListStore: useVenueListStore(),
+	venueShowStore: useVenueShowStore(),
+	venueCreateStore: useVenueCreateStore(),
+	venueUpdateStore: useVenueUpdateStore(),
+	venueDeleteStore: useVenueDeleteStore()
+})
